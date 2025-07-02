@@ -1,23 +1,16 @@
-import logo from './logo.svg';
-import './App.css';
+import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
+import Home from './pages/Home';
 
 function App() {
   return (
-    <div className="App">
-      <header className="App-header">
-        <img src={logo} className="App-logo" alt="logo" />
-        <p>
-          Beauty by Viktoria.
-        </p>
-        <a
-          className="App-link"
-          href="https://reactjs.org"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          Learn React
-        </a>
-      </header>
+    <div>
+      <h1>Beauty by Viktoria</h1>
+      <p>Welcome to our beauty services website!</p>
+      <Router>
+        <Routes>
+          <Route path="/" element={<Home />} />
+        </Routes>
+      </Router>
     </div>
   );
 }
