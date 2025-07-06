@@ -1,0 +1,160 @@
+/* Base Styles */
+.book-now-page {
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+  background: #fff;
+}
+
+.booking-container {
+  width: 100%;
+  max-width: 1200px;
+  margin: 1rem auto;
+  padding: 5rem;
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.booking-title {
+  text-align: center;
+  color: #2a4e3a;
+  margin-bottom: 1.5rem;
+  font-size: 1.8rem;
+}
+
+/* View Toggle Styles */
+.view-toggle {
+  display: flex;
+  justify-content: center;
+  gap: 1rem;
+  margin: 1rem 0 2rem;
+  width: 100%;
+}
+
+.toggle-btn {
+  padding: 0.5rem 1.5rem;
+  background: #f0f0f0;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 1rem;
+  transition: all 0.3s ease;
+  font-family: inherit;
+}
+
+.toggle-btn:hover {
+  background: #e0e0e0;
+}
+
+.toggle-btn.active {
+  background: #6B9E7A;
+  color: white;
+}
+
+/* Calendar Section */
+.calendar-section {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  margin: 1rem 3rem 2rem;
+}
+
+.calendar-section h2 {
+  text-align: center;
+  color: #000000;
+  margin-bottom: 1.5rem;
+  font-size: 1.5rem;
+}
+
+.calendar-embed-container {
+  width: 100%;
+  height: 300px;
+  overflow: hidden;
+  border: 1px solid #e0e0e0;
+  border-radius: 8px;
+  position: relative;
+}
+
+.calendar-iframe {
+  position: absolute;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 100%;
+  height: 400px;
+  border: none;
+  max-width: 800px;
+}
+
+.calendar-note {
+  text-align: center;
+  color: #bb4343;
+  margin-top: 1rem;
+  font-size: 0.9rem;
+  padding: 0 1rem;
+}
+
+/* booking Form Styles */
+.form-wrapper {
+  width: 100%;
+  max-width: 800px;
+  margin: 10rem auto;
+  border-radius: 8px;
+}
+
+.booking-form {
+  width: 100%;
+  height: 800px;
+  border: none;
+}
+
+
+@media (max-width: 786px) {
+  /* Mobile container adjustments */
+  .booking-container {
+    padding: 1.5rem;
+    box-sizing: border-box;
+  }
+
+  /* Calendar section padding */
+  .calendar-section {
+    padding: 0 1rem;
+    box-sizing: border-box;
+    margin: 1rem 0;
+  }
+
+  /* Calendar container styling - GOLDILOCKS SIZE */
+  .calendar-embed-container {
+    padding: 0 0.5rem;
+    box-sizing: border-box;
+    width: 100%;
+    height: 300px; 
+    margin: 0 auto;
+    border: 1px solid #e0e0e0;
+    border-radius: 8px;
+    overflow: hidden;
+  }
+
+  /* Calendar iframe adjustments */
+  .calendar-iframe {
+    width: 100% !important;
+
+    min-width: 100% !important;
+    position: relative !important;
+    left: 0 !important;
+    transform: none !important;
+    zoom: 1.1;
+  }
+
+  /* Form adjustments */
+  .form-wrapper {
+    margin: 2rem auto;
+    padding: 0;
+  }
+
+  .booking-form {
+    height: 800px;
+  }
+}

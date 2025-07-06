@@ -13,6 +13,7 @@ body {
   min-height: 100vh;
 }
 
+
 main {
   flex: 1;
 }
@@ -76,25 +77,34 @@ main {
 .cta-button:hover {
   background-color: #5a8c69;
 }
+/* About Me Section */
+.about-me {
+  background: #f8f5f2; /* Slightly different background */
+}
+
 
 /* Mobile Responsiveness */
 @media (max-width: 768px) {
-  .hero {
-    padding: 2rem 1rem;
-  }
-  
   .hero-content {
     flex-direction: column;
-    gap: 2rem;
+    align-items: center;
   }
   
-  .hero-text {
-    order: 2;
+  .about-me .hero-content {
+    flex-direction: column;
+  }
+  
+  .about-me .hero-text {
+    text-align: center;
+  }
+  
+  .about-me .hero-text h1,
+  .about-me .hero-text h2 {
     text-align: center;
   }
   
   .hero-image {
-    order: 1;
+    order: -1;
   }
   
   .hero-text h1 {
