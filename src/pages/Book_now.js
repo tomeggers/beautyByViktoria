@@ -4,8 +4,6 @@ import '../assets/styles/book_now.css';
 function Book_now() {
   const userTimezone = Intl.DateTimeFormat().resolvedOptions().timeZone;
   const [viewMode, setViewMode] = React.useState('WEEK');
-
-  // Simple URL with all navigation controls enabled
   const calendarEmbedUrl = `https://calendar.google.com/calendar/embed?src=5436e7de19f13b77edc7a51a6f8f2b689885079874af494899a3e9a17b0aa5fd%40group.calendar.google.com&ctz=${encodeURIComponent(userTimezone)}&mode=${viewMode}`;
 
   return (
@@ -14,7 +12,7 @@ function Book_now() {
       <main className="booking-container">
         <h1 className="booking-title">Book Your Appointment</h1>
 
-        {/* View Toggle - Simplified */}
+        {/* View Toggle */}
         <div className="view-toggle">
           <button 
             className={`toggle-btn ${viewMode === 'WEEK' ? 'active' : ''}`}
@@ -30,7 +28,7 @@ function Book_now() {
           </button>
         </div>
 
-        {/* Calendar Embed - With Native Controls */}
+        {/* Calendar Embed*/}
         <section className="calendar-section">
           <h2>{viewMode === 'AGENDA' ? "Upcoming Bookings" : "Weekly Availability"}</h2>
           <div className="calendar-embed-container">
@@ -39,7 +37,6 @@ function Book_now() {
               src={calendarEmbedUrl}
               className="calendar-iframe"
               title="Booking Calendar"
-              frameBorder="0"
             />
           </div>
           <p className="calendar-note">

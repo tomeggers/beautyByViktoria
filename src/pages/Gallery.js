@@ -1,8 +1,5 @@
-import React from 'react';
 import Header from '../components/Header/Header';
 import '../assets/styles/gallery.css';
-
-// Import all your images
 import eyeliner from '../assets/images/beauty pics/eyeliner.png';
 import eyeliner1 from '../assets/images/beauty pics/eyeliner1.png';
 import liftAfter from '../assets/images/beauty pics/liftandtint+shapeafter.png';
@@ -51,54 +48,57 @@ const gallerySections = [
 ];
 
 function Gallery() {
-  return (
-    <div className="gallery-container">
-      <Header />
-      <main className="gallery-main">
-        <h1 className="gallery-title">Our Beauty Gallery</h1>
-        <p className="gallery-intro">Explore our work and see the transformations we create</p>
-        
-        {gallerySections.map((section, index) => (
-          <section key={index} className="gallery-section">
-            <h2 className="section-title">{section.title}</h2>
-            <p className="section-description">{section.description}</p>
-            
-            {section.beforeAfter && (
-              <div className="before-after-container">
-                {section.beforeAfter.map((item, idx) => (
-                  <div key={idx} className="before-after-pair">
-                    <div className="comparison-image">
-                      <img src={item.before} alt={`Before ${item.alt}`} />
-                      <span className="comparison-label">Before</span>
+  return (        
+    <>
+      <div className="gallery-banner">
+        <Header />
+      </div>
+      <div className="gallery-container">
+        <main className="gallery-main">
+          <h1 className="gallery-title">My Beauty Gallery</h1>
+          <p className="gallery-intro">Explore my work and see the transformations I create</p>
+
+          {gallerySections.map((section, index) => (
+            <section key={index} className="gallery-section">
+              <h2 className="section-title">{section.title}</h2>
+              <p className="section-description">{section.description}</p>
+              
+              {section.beforeAfter && (
+                <div className="before-after-container">
+                  {section.beforeAfter.map((item, idx) => (
+                    <div key={idx} className="before-after-pair">
+                      <div className="comparison-image">
+                        <img src={item.before} alt={`Before ${item.alt}`} />
+                        <span className="comparison-label">Before</span>
+                      </div>
+                      <div className="comparison-image">
+                        <img src={item.after} alt={`After ${item.alt}`} />
+                        <span className="comparison-label">After</span>
+                      </div>
                     </div>
-                    <div className="comparison-image">
-                      <img src={item.after} alt={`After ${item.alt}`} />
-                      <span className="comparison-label">After</span>
+                  ))}
+                </div>
+              )}
+              
+              {section.images && (
+                <div className="image-grid">
+                  {section.images.map((image, idx) => (
+                    <div key={idx} className="gallery-image-container">
+                      <img 
+                        src={image.src} 
+                        alt={image.alt} 
+                        className="gallery-image"
+                        loading="lazy"
+                      />
                     </div>
-                  </div>
-                ))}
-              </div>
-            )}
-            
-            {section.images && (
-              <div className="image-grid">
-                {section.images.map((image, idx) => (
-                  <div key={idx} className="gallery-image-container">
-                    <img 
-                      src={image.src} 
-                      alt={image.alt} 
-                      className="gallery-image"
-                      loading="lazy"
-                    />
-                  </div>
-                ))}
-              </div>
-            )}
-          </section>
-        ))}
-      </main>
-    </div>
+                  ))}
+                </div>
+              )}
+            </section>
+          ))}
+        </main>
+      </div>
+    </>
   );
 }
-
 export default Gallery;

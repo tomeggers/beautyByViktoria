@@ -84,11 +84,12 @@
 }
 
 h1 {
-    color: #333;
-    margin-bottom: 30px;
-    font-size: 2em;
-    text-align: center;
+  text-align: center;
+  color: #2a4e3a;
+  margin-bottom: 1.5rem;
+  font-size: 1.8rem;
 }
+
 
 h2 {
     color: #555;

@@ -120,6 +120,17 @@ const priceList = [
             { name: "24+ month Colour boost", time: "", price: "POA" },
         ],
     },
+    {
+        category: "Gift Vouchers",
+        description: "Gift vouchers are available for all treatments or your choice of value. Perfect for birthdays, anniversaries, or just to show someone you care.",
+        extra: [
+            "Gift vouchers can be purchased in person or online through the booking form. They make a thoughtful gift for any occasion, allowing your loved ones to choose their preferred treatments.",
+            "You can add in the comments section of the booking form if you want a hard copy and can pick up or an email gift voucher."
+        ],
+        items: [
+            { name: "Gift Voucher", time: "", price: "$25+" },
+        ]
+    }
 ];
 
 export default function PriceList() {
@@ -168,9 +179,6 @@ export default function PriceList() {
                 ))}
 
                 <div className="footer-notes">
-                    <p>
-                        <strong>Gift vouchers</strong> are available for all treatments or your choice of value.
-                    </p>
                     <p>
                         <strong>Cancellations:</strong> If you wish to cancel your appointment please give 24 hours' notice, otherwise a 50% fee will apply.
                     </p>
