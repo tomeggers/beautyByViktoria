@@ -2,8 +2,12 @@ import Header from '../components/Header/Header';
 import '../assets/styles/home.css';
 import facialMassage from '../assets/images/facial_massage.png';
 import headshot from '../assets/images/viktoria-headshot.PNG';
+import { useNavigate } from 'react-router-dom';
+import { FaInstagram, FaFacebook } from 'react-icons/fa';
 
 function Home() {
+  const navigate = useNavigate();
+
   return (
     <div className="home">
       <Header />
@@ -27,7 +31,13 @@ function Home() {
                 and feel your best, so you can step out into the world with confidence.
               </p>
               <p>Book your appointment today and let me take care of you!</p>
-              <button className="cta-button">Book Now</button>
+               <button 
+                className="cta-button" 
+                onClick={() => navigate('/book')}
+                aria-label="Book an appointment"
+              >
+                Book Now
+              </button>
             </div>
           </div>
         </section>
@@ -47,6 +57,21 @@ function Home() {
               <p>I pride myself on being a good intuitive listener. My nurturing nature allows me to build meaningful connections with my clients.</p>
             </div>
           </div>
+        </section>
+
+        {/* Social Media Links */}
+        <section className="social-media">
+          <h2>Connect With Me</h2>
+            <div className="social-icons">
+              <a href="https://www.instagram.com/beauty_byviktoria/" target="_blank" rel="noopener noreferrer" aria-label="Instagram">
+                <FaInstagram className="social-icon" size={32} />
+                <p>Beauty by Viktoria Instagram</p>
+              </a>
+             <a href="https://www.facebook.com/beautybyviktoria" target="_blank" rel="noopener noreferrer" aria-label="Facebook">
+                <FaFacebook className="social-icon" size={32} />
+                <p>Beauty by Viktoria Facebook</p>
+              </a>
+            </div>
         </section>
       </main>
     </div>

@@ -82,6 +82,35 @@ main {
   background: #f8f5f2; /* Slightly different background */
 }
 
+/* Social Media Section */
+.social-media {
+  text-align: center;
+  padding: 40px 20px;
+  background-color: #f9f9f9;
+  margin-top: 40px;
+}
+
+.social-media h2 {
+  color: #333;
+  margin-bottom: 20px;
+}
+
+.social-icons {
+  display: flex;
+  justify-content: center;
+  gap: 30px;
+}
+
+.social-icon {
+  width: 40px;
+  height: 40px;
+  transition: transform 0.3s ease;
+}
+
+.social-icon:hover {
+  transform: scale(1.1);
+}
+
 
 /* Mobile Responsiveness */
 @media (max-width: 768px) {
@@ -114,5 +143,14 @@ main {
   .cta-button {
     width: 100%;
     max-width: 200px;
+  }
+
+  .social-icons {
+    gap: 20px;
+  }
+  
+  .social-icon {
+    width: 35px;
+    height: 35px;
   }
 }
