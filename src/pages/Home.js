@@ -12,7 +12,7 @@ function Home() {
         <section className="hero">
           <div className="hero-content">
             <div className="hero-image">
-              <img src="/images/reducedPics/nails-home.webp" alt="Nails" />
+              <img src="/images/reducedPics/Nails-home.webp" alt="Nails" />
             </div>
             <div className="hero-text">
               <p>
