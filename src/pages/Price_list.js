@@ -36,7 +36,7 @@ const priceList = [
         category: "Toes",
         items: [
             { name: "Spa pedicure", time: "60 mins", price: "$85" },
-            { name: "Spa pedicure with paraffin mask", time: "90 mins", price: "$90" },
+            { name: "Spa pedicure with paraffin mask", time: "90 mins", price: "$95" },
             { name: "Gel toes", time: "60 mins", price: "$65" },
         ],
     },
