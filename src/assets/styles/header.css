@@ -1,70 +1,48 @@
 .header {
   background-color: #6B9E7A;
-  padding: 1rem 0;
   width: 100%;
+  position: relative;
 }
 
 .header-container {
   max-width: 1200px;
   margin: 0 auto;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 1rem;
-}
-
-/* Logo Styles */
-.logo-wrapper {
   text-align: center;
+  padding: 1rem;
 }
 
 .header-logo {
-  width: 200px;
+  width: 150px;
   height: auto;
   display: block;
   margin: 0 auto;
 }
 
-.main-nav {
-  width: 100%;
-}
+@media (min-width: 768px) {
+  .header {
+    position: fixed;
+    top: 0;
+    left: 0;
+    z-index: 1001;
+    height: 120px;
+  }
 
-.nav-list {
-  display: flex;
-  justify-content: center;
-  list-style: none;
-  margin: 0;
-  padding: 0;
-  gap: 2rem;
-}
-
-.nav-list li a {
-  color: white;
-  text-decoration: none;
-  font-weight: 500;
-  font-size: 1rem;
-  transition: color 0.3s ease;
-  padding: 0.5rem 0;
-}
-
-.nav-list li a:hover {
-  color: #b3a9a9;
-  text-decoration: underline;
-}
-
-@media (max-width: 768px) {
-  .nav-list {
-    gap: 0.5rem;
+  .header-container {
+    height: 100%;
+    display: flex;
+    justify-content: center;
     align-items: center;
   }
-  
-  .nav-list li {
-    width: 100%;
-    text-align: center;
+}
+
+@media (max-width: 767px) {
+  .header {
+    position: relative;
+    height: auto;
+    padding-top: 1rem;
   }
-  
-  .nav-list li a {
-    display: block;
-    padding: 0.5rem;
+
+  .header-logo {
+    width: 200px;
   }
 }

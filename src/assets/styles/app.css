@@ -1,0 +1,12 @@
+/* App.css */
+
+.app-main {
+  padding-top: 180px; /* space for fixed header on desktop */
+  padding-bottom: 80px;
+}
+
+@media (max-width: 767px) {
+  .app-main {
+    padding-top: 0; /* small padding on mobile */
+  }
+}

@@ -1,0 +1,52 @@
+.mobile-nav {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  height: 60px;
+  background-color: #6B9E7A;
+  display: flex;
+  justify-content: space-around;
+  align-items: center;
+  z-index: 1000;
+}
+
+.mobile-nav button {
+  background: none;
+  border: none;
+  color: white;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  font-size: 14px;
+  cursor: pointer;
+  transition: color 0.2s;
+}
+
+.mobile-nav button:hover {
+  color: #f4f4f4;
+}
+
+.mobile-nav svg {
+  font-size: 20px;
+  margin-bottom: 2px;
+}
+
+/* Desktop View */
+@media (min-width: 768px) {
+  .mobile-nav {
+    top: 120px; /* match header height */
+    bottom: auto;
+    height: 70px;
+    justify-content: center;
+    gap: 80px;
+  }
+
+  .mobile-nav button span {
+    font-size: 1.1rem;
+  }
+
+  .mobile-nav button {
+    padding: 0.5rem 1.5rem;
+  }
+}
