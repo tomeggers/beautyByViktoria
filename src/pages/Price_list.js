@@ -1,5 +1,4 @@
 import React from "react";
-import Header from '../components/Header/Header';
 import '../assets/styles/prices.css';
 import { useNavigate } from 'react-router-dom';
 
@@ -137,7 +136,6 @@ export default function PriceList() {
     const navigate = useNavigate();
     return (
         <div className="price-list-container">
-            <Header />
             <div className="price-list-content">
                 <h1>Price List</h1>
                 {priceList.map((section) => (

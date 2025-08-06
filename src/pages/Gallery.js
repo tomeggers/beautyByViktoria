@@ -1,4 +1,3 @@
-import Header from '../components/Header/Header';
 import '../assets/styles/gallery.css';
 
 const gallerySections = [
@@ -52,7 +51,6 @@ function Gallery() {
   return (
     <>
       <div className="gallery-banner">
-        <Header />
       </div>
       <div className="gallery-container">
         <main className="gallery-main">

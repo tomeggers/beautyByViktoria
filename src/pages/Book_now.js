@@ -1,5 +1,4 @@
 import React from 'react';
-import Header from '../components/Header/Header';
 import '../assets/styles/book_now.css';
 function Book_now() {
   const userTimezone = Intl.DateTimeFormat().resolvedOptions().timeZone;
@@ -8,7 +7,6 @@ function Book_now() {
 
   return (
     <div className="book-now-page">
-      <Header />
       <main className="booking-container">
         <h1 className="booking-title">Book Your Appointment</h1>
 

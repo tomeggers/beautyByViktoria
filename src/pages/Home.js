@@ -1,7 +1,4 @@
-import Header from '../components/Header/Header';
 import '../assets/styles/home.css';
-import facialMassage from '../assets/images/facial_massage.png';
-import headshot from '../assets/images/viktoria-headshot.PNG';
 import { useNavigate } from 'react-router-dom';
 import { FaInstagram, FaFacebook } from 'react-icons/fa';
 
@@ -10,13 +7,12 @@ function Home() {
 
   return (
     <div className="home">
-      <Header />
       <main>
         {/* Hero Section */}
         <section className="hero">
           <div className="hero-content">
             <div className="hero-image">
-              <img src={facialMassage} alt="Facial Massage" />
+              <img src="/images/reducedPics/nails-home.webp" alt="Nails" />
             </div>
             <div className="hero-text">
               <p>
@@ -45,7 +41,7 @@ function Home() {
         <section className="hero about-me">
           <div className="hero-content">
             <div className="hero-image">
-              <img src={headshot} alt="Viktoria Eggers" />
+              <img src="/images/reducedPics/viktoria-headshot.webp" alt="Viktoria's Headshot" />
             </div>
             <div className="hero-text">
               <h1>Meet Viktoria</h1>
