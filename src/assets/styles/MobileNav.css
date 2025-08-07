@@ -4,17 +4,19 @@
   left: 0;
   right: 0;
   height: 60px;
-  background-color: #6B9E7A;
+  background: linear-gradient(to bottom, #A7CBB2, #CFEED1); /* mobile default */
   display: flex;
   justify-content: space-around;
   align-items: center;
   z-index: 1000;
+  border-top-left-radius: 1rem;
+  border-top-right-radius: 1rem;
 }
 
 .mobile-nav button {
   background: none;
   border: none;
-  color: white;
+  color: black; /* icons and text now black */
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -24,7 +26,7 @@
 }
 
 .mobile-nav button:hover {
-  color: #f4f4f4;
+  color: #333333; /* dark grey for hover */
 }
 
 .mobile-nav svg {
@@ -35,11 +37,18 @@
 /* Desktop View */
 @media (min-width: 768px) {
   .mobile-nav {
-    top: 120px; /* match header height */
+    top: 120px; /* matches header height */
     bottom: auto;
     height: 70px;
     justify-content: center;
     gap: 80px;
+    border-top-left-radius: 0;
+    border-top-right-radius: 0;
+    border-bottom-left-radius: 1rem;
+    border-bottom-right-radius: 1rem;
+
+    /* REVERSED gradient for seamless header->nav */
+    background: linear-gradient(to top, #A7CBB2, #CFEED1);
   }
 
   .mobile-nav button span {

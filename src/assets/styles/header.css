@@ -1,7 +1,11 @@
 .header {
-  background-color: #6B9E7A;
+  background: linear-gradient(to bottom, #A7CBB2, #CFEED1);
   width: 100%;
   position: relative;
+  border-bottom-left-radius: 1rem;
+  border-bottom-right-radius: 1rem;
+  transition: background 0.3s ease;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1); /* default shadow */
 }
 
 .header-container {
@@ -25,6 +29,11 @@
     left: 0;
     z-index: 1001;
     height: 120px;
+
+    border-bottom-left-radius: 0;
+    border-bottom-right-radius: 0;
+
+    box-shadow: none; /* 🧼 Removes shadow on desktop */
   }
 
   .header-container {

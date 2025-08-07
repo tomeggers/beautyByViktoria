@@ -3,7 +3,7 @@ import '../assets/styles/gallery.css';
 const gallerySections = [
   {
     title: "Eyeliner Treatments",
-    description: "Professional eyeliner cosmetic tattooing results",
+    description: "Professional eyeliner cosmetic tattooing results that enhance your natural beauty",
     images: [
       { src: "/images/reducedPics/eyeliner.webp", alt: "Eyeliner cosmetic tattoo result" },
       { src: "/images/reducedPics/eyeliner1.webp", alt: "Eyeliner cosmetic tattoo close-up" }
@@ -11,7 +11,7 @@ const gallerySections = [
   },
   {
     title: "Powder Brows",
-    description: "Before and after powder brow treatments",
+    description: "Transform your brows with our signature powder brow technique",
     beforeAfter: [
       {
         before: "/images/reducedPics/powderbrowbefore.webp",
@@ -27,7 +27,7 @@ const gallerySections = [
   },
   {
     title: "Lash Lift & Tint",
-    description: "Lash lift and tint transformations",
+    description: "Natural-looking lash enhancements that open up your eyes",
     beforeAfter: [
       {
         before: "/images/reducedPics/liftandtint+shapebefore.webp",
@@ -38,7 +38,7 @@ const gallerySections = [
   },
   {
     title: "Lip Blushing",
-    description: "Cosmetic tattoo lip blushing results",
+    description: "Subtle lip enhancement that gives you the perfect pout",
     images: [
       { src: "/images/reducedPics/tattoolips.webp", alt: "Lip blushing result" },
       { src: "/images/reducedPics/tattoolips1.webp", alt: "Lip blushing side view" },
@@ -49,38 +49,41 @@ const gallerySections = [
 
 function Gallery() {
   return (
-    <>
-      <div className="gallery-banner">
-      </div>
+    <div className="gallery-page">
       <div className="gallery-container">
         <main className="gallery-main">
-          <h1 className="gallery-title">My Beauty Gallery</h1>
-          <p className="gallery-intro">Explore my work and see the transformations I create</p>
-
           {gallerySections.map((section, index) => (
             <section key={index} className="gallery-section">
-              <h2 className="section-title">{section.title}</h2>
-              <p className="section-description">{section.description}</p>
+              <div className="section-header">
+                <h2 className="section-title">{section.title}</h2>
+                <p className="section-description">{section.description}</p>
+              </div>
 
               {section.beforeAfter && (
                 <div className="before-after-container">
                   {section.beforeAfter.map((item, idx) => (
-                    <div key={idx} className="before-after-pair">
-                      <div className="comparison-image">
-                        <img
-                          src={item.before}
-                          alt={`Before ${item.alt}`}
-                          loading="lazy"
-                        />
-                        <span className="comparison-label">Before</span>
-                      </div>
-                      <div className="comparison-image">
-                        <img
-                          src={item.after}
-                          alt={`After ${item.alt}`}
-                          loading="lazy"
-                        />
-                        <span className="comparison-label">After</span>
+                    <div key={idx} className="before-after-card">
+                      <div className="comparison-wrapper">
+                        <div className="comparison-image before">
+                          <img
+                            src={item.before}
+                            alt={`Before ${item.alt}`}
+                            loading="lazy"
+                          />
+                          <div className="comparison-overlay">
+                            <span className="comparison-label">Before</span>
+                          </div>
+                        </div>
+                        <div className="comparison-image after">
+                          <img
+                            src={item.after}
+                            alt={`After ${item.alt}`}
+                            loading="lazy"
+                          />
+                          <div className="comparison-overlay">
+                            <span className="comparison-label">After</span>
+                          </div>
+                        </div>
                       </div>
                     </div>
                   ))}
@@ -88,15 +91,22 @@ function Gallery() {
               )}
 
               {section.images && (
-                <div className="image-grid">
+                <div className="image-gallery">
                   {section.images.map((image, idx) => (
-                    <div key={idx} className="gallery-image-container">
-                      <img
-                        src={image.src}
-                        alt={image.alt}
-                        className="gallery-image"
-                        loading="lazy"
-                      />
+                    <div key={idx} className="gallery-card">
+                      <div className="image-wrapper">
+                        <img
+                          src={image.src}
+                          alt={image.alt}
+                          className="gallery-image"
+                          loading="lazy"
+                        />
+                        <div className="image-overlay">
+                          <div className="overlay-content">
+                            <span className="view-icon">👁</span>
+                          </div>
+                        </div>
+                      </div>
                     </div>
                   ))}
                 </div>
@@ -105,7 +115,7 @@ function Gallery() {
           ))}
         </main>
       </div>
-    </>
+    </div>
   );
 }
 

@@ -1,45 +1,93 @@
 import '../assets/styles/home.css';
 import { useNavigate } from 'react-router-dom';
 import { FaInstagram, FaFacebook } from 'react-icons/fa';
+import { useEffect, useMemo, useState } from "react";
+import { motion } from "framer-motion";
 
 function Home() {
   const navigate = useNavigate();
+  const [titleNumber, setTitleNumber] = useState(0);
+  
+  const titles = useMemo(
+    () => ["beautiful", "confident", "radiant", "glowing", "stunning"],
+    []
+  );
+
+  useEffect(() => {
+    const timeoutId = setTimeout(() => {
+      if (titleNumber === titles.length - 1) {
+        setTitleNumber(0);
+      } else {
+        setTitleNumber(titleNumber + 1);
+      }
+    }, 2000);
+    return () => clearTimeout(timeoutId);
+  }, [titleNumber, titles]);
 
   return (
     <div className="home">
       <main>
-        {/* Hero Section */}
-        <section className="hero">
-          <div className="hero-content">
-            <div className="hero-image">
-              <img src="/images/reducedPics/Nails-home.webp" alt="Nails" />
-            </div>
-            <div className="hero-text">
-              <p>
-                With over 20 years of experience as a qualified beauty therapist, nail technician and cosmetic tattoo artist, 
-                I'm here to bring you the ultimate self-care experience. From flawless nails to relaxing 
-                treatments that will make you feel confident in your own skin.
-              </p>
-              <p>
-                Whether you're preparing for a special occasion or just need some time to unwind, 
-                I offer a range of services tailored to your needs. My goal is to help you look 
-                and feel your best, so you can step out into the world with confidence.
-              </p>
-              <p>Book your appointment today and let me take care of you!</p>
-               <button 
-                className="cta-button" 
-                onClick={() => navigate('/book')}
-                aria-label="Book an appointment"
-              >
-                Book Now
-              </button>
+        {/* Modern Animated Hero Section */}
+        <section className="modern-hero">
+          <div className="container">
+            <div className="hero-content-modern">
+              <div className="hero-text-modern">
+                <h1 className="hero-title">
+                  <span className="text-primary"><span className="text-primary">Transform into someone who feels</span>
+                  </span>
+                  <div className="animated-word-container">
+                    {titles.map((title, index) => (
+                      <motion.span
+                        key={index}
+                        className="animated-word"
+                        initial={{ opacity: 0, y: "-100" }}
+                        transition={{ type: "spring", stiffness: 50 }}
+                        animate={
+                          titleNumber === index
+                            ? {
+                                y: 0,
+                                opacity: 1,
+                              }
+                            : {
+                                y: titleNumber > index ? -150 : 150,
+                                opacity: 0,
+                              }
+                        }
+                      >
+                        {title}
+                      </motion.span>
+                    ))}
+                  </div>
+                </h1>
+
+                <p className="hero-description">
+                  With over 20 years of experience as a qualified beauty therapist, nail technician and cosmetic tattoo artist, 
+                  I'm here to bring you the ultimate self-care experience. From flawless nails to relaxing 
+                  treatments that will make you feel confident in your own skin.
+                </p>
+              </div>
+              
+              <div className="hero-actions">
+                <button 
+                  className="cta-button-modern" 
+                  onClick={() => navigate('/gallery')}
+                >
+                  View My Work
+                </button>
+                <button 
+                  className="cta-button-modern" 
+                  onClick={() => navigate('/book')}
+                >
+                  Book Now
+                </button>
+              </div>
             </div>
           </div>
         </section>
 
         {/* About Me Section */}
         <section className="hero about-me">
-          <div className="hero-content">
+          <div className="about-me">
             <div className="hero-image">
               <img src="/images/reducedPics/viktoria-headshot.webp" alt="Viktoria's Headshot" />
             </div>
