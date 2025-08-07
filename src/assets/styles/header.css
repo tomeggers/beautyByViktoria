@@ -5,7 +5,7 @@
   border-bottom-left-radius: 1rem;
   border-bottom-right-radius: 1rem;
   transition: background 0.3s ease;
-  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1); /* default shadow */
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
 }
 
 .header-container {
@@ -33,7 +33,7 @@
     border-bottom-left-radius: 0;
     border-bottom-right-radius: 0;
 
-    box-shadow: none; /* 🧼 Removes shadow on desktop */
+    box-shadow: none;
   }
 
   .header-container {
@@ -46,12 +46,26 @@
 
 @media (max-width: 767px) {
   .header {
-    position: relative;
-    height: auto;
-    padding-top: 1rem;
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    z-index: 1001;
+    height: calc(150px + env(safe-area-inset-top));
+    padding-top: env(safe-area-inset-top);
+    border-bottom-left-radius: 1rem;
+    border-bottom-right-radius: 1rem;
+  }
+
+  .header-container {
+    height: 150px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    padding: 1rem;
   }
 
   .header-logo {
-    width: 200px;
+    width: 100px;
   }
 }

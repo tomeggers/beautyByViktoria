@@ -1,12 +1,13 @@
 /* App.css */
 
 .app-main {
-  padding-top: 180px; /* space for fixed header on desktop */
+  padding-top: 180px;
   padding-bottom: 80px;
 }
 
 @media (max-width: 767px) {
   .app-main {
-    padding-top: 0; /* small padding on mobile */
+    padding-top: calc(150px + env(safe-area-inset-top) + 20px);
+    padding-bottom: 80px;
   }
 }
