@@ -7,7 +7,7 @@
 
 @media (max-width: 767px) {
   .app-main {
-    padding-top: calc(150px + env(safe-area-inset-top) + 20px);
+    padding-top: calc(150px + env(safe-area-inset-top));
     padding-bottom: 80px;
   }
 }
