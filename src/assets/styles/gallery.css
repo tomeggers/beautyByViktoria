@@ -72,7 +72,6 @@
 }
 
 .before-after-card {
-  background: #f8f9fa;
   border-radius: 16px;
   padding: 1.5rem;
   box-shadow: 0 4px 20px rgba(0,0,0,0.06);
@@ -173,33 +172,7 @@
   transform: scale(1.1);
 }
 
-.image-overlay {
-  position: absolute;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  background: linear-gradient(135deg, rgba(107, 158, 122, 0.8), rgba(42, 78, 58, 0.8));
-  opacity: 0;
-  transition: opacity 0.3s ease;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-}
-
-.gallery-card:hover .image-overlay {
-  opacity: 1;
-}
-
-.overlay-content {
-  text-align: center;
-  color: white;
-}
-
-.view-icon {
-  font-size: 2rem;
-  opacity: 0.9;
-}
+/* Removed hover overlay effects */
 
 @media (max-width: 1024px) {
   .gallery-section {

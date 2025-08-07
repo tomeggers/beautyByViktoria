@@ -101,11 +101,6 @@ function Gallery() {
                           className="gallery-image"
                           loading="lazy"
                         />
-                        <div className="image-overlay">
-                          <div className="overlay-content">
-                            <span className="view-icon">👁</span>
-                          </div>
-                        </div>
                       </div>
                     </div>
                   ))}

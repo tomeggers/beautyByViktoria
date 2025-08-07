@@ -1,6 +1,5 @@
 import { Link } from 'react-router-dom';
 import '../assets/styles/header.css';
-import beautyImage from '../assets/images/navbar_logo_transparent.png';
 
 function Header() {
   return (
@@ -8,7 +7,7 @@ function Header() {
       <div className="header-container">
         <div className="logo-wrapper">
           <img 
-            src={beautyImage} 
+            src="/images/reducedPics/navbar_logo_transparent.webp" 
             alt="Beauty by Viktoria" 
             className="header-logo"
           />
