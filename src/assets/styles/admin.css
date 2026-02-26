@@ -1,0 +1,1509 @@
+/* ==========================================================================
+   Beauty by Viktoria — Admin Dashboard
+   Redesigned: Premium, clean, luxurious spa-booking aesthetic
+   Brand green: #6B9E7A | Accent: warm rose / gold
+   ========================================================================== */
+
+/* --------------------------------------------------------------------------
+   CSS Custom Properties
+   -------------------------------------------------------------------------- */
+:root {
+  --brand-green:        #6B9E7A;
+  --brand-green-dark:   #4e9e6e;
+  --brand-green-deep:   #2d5240;
+  --brand-forest:       #1a2e24;
+  --brand-green-light:  rgba(107, 158, 122, 0.08);
+  --brand-green-glow:   rgba(107, 158, 122, 0.35);
+
+  --accent-amber:       #d97706;
+  --accent-amber-light: #fef3c7;
+  --accent-amber-mid:   #fcd34d;
+  --accent-rose:        #c2796a;
+  --accent-rose-light:  #fdf0ee;
+
+  --status-approved:    #27ae60;
+  --status-approved-bg: #e6f4ec;
+  --status-declined:    #8c9aa8;
+  --status-declined-bg: #f0f2f4;
+  --status-reschedule:  #c27c1e;
+  --status-reschedule-bg: #fff3dc;
+  --status-today:       #3b82f6;
+  --status-today-bg:    #eff6ff;
+
+  --text-primary:   #1c2b22;
+  --text-secondary: #4a5e52;
+  --text-muted:     #8a9e92;
+
+  --bg-page:    #f7faf8;
+  --bg-card:    #ffffff;
+  --bg-subtle:  #f5f4f1;
+
+  --border-soft:   rgba(0, 0, 0, 0.06);
+  --border-medium: rgba(0, 0, 0, 0.10);
+
+  --radius-sm:  8px;
+  --radius-md:  12px;
+  --radius-lg:  16px;
+  --radius-xl:  20px;
+  --radius-pill: 50px;
+
+  --shadow-sm:  0 1px 4px rgba(0, 0, 0, 0.05);
+  --shadow-md:  0 4px 20px rgba(0, 0, 0, 0.07);
+  --shadow-lg:  0 8px 32px rgba(0, 0, 0, 0.12);
+  --shadow-xl:  0 16px 48px rgba(0, 0, 0, 0.18);
+  --shadow-green: 0 4px 12px rgba(107, 158, 122, 0.4);
+
+  --transition-fast: 0.18s ease;
+  --transition-mid:  0.25s ease;
+}
+
+/* ==========================================================================
+   Admin Auth Screen
+   ========================================================================== */
+.admin-auth {
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: linear-gradient(150deg, var(--brand-forest) 0%, var(--brand-green-deep) 55%, var(--brand-green) 100%);
+  padding: 2rem;
+  position: relative;
+  overflow: hidden;
+}
+
+/* Decorative radial glow behind the card */
+.admin-auth::before {
+  content: '';
+  position: absolute;
+  top: -10%;
+  right: -10%;
+  width: 500px;
+  height: 500px;
+  background: radial-gradient(circle, rgba(107,158,122,0.18) 0%, transparent 70%);
+  pointer-events: none;
+}
+
+.auth-container {
+  background: var(--bg-card);
+  padding: 2.75rem 2.5rem;
+  border-radius: var(--radius-xl);
+  box-shadow: var(--shadow-xl);
+  width: 100%;
+  max-width: 420px;
+  border: 1px solid rgba(255,255,255,0.08);
+  position: relative;
+  z-index: 1;
+}
+
+/* Top accent strip */
+.auth-container::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 4px;
+  background: linear-gradient(90deg, var(--brand-green-dark), var(--brand-green));
+  border-radius: var(--radius-xl) var(--radius-xl) 0 0;
+}
+
+.auth-container h2 {
+  text-align: center;
+  color: var(--text-primary);
+  margin-bottom: 2rem;
+  font-size: 1.85rem;
+  font-weight: 700;
+  letter-spacing: -0.3px;
+}
+
+.form-group {
+  margin-bottom: 1.5rem;
+}
+
+.form-group label {
+  display: block;
+  margin-bottom: 0.5rem;
+  color: var(--text-secondary);
+  font-weight: 600;
+  font-size: 0.875rem;
+  letter-spacing: 0.2px;
+}
+
+.form-group input {
+  width: 100%;
+  padding: 0.85rem 1rem;
+  border: 1.5px solid #e2e8e4;
+  border-radius: var(--radius-sm);
+  font-size: 1rem;
+  color: var(--text-primary);
+  background: #fafdf9;
+  transition: border-color var(--transition-fast), box-shadow var(--transition-fast);
+  box-sizing: border-box;
+}
+
+.form-group input:focus {
+  outline: none;
+  border-color: var(--brand-green);
+  box-shadow: 0 0 0 3px var(--brand-green-light);
+  background: #fff;
+}
+
+.error-message {
+  color: #c0392b;
+  text-align: center;
+  margin-bottom: 1rem;
+  font-size: 0.875rem;
+  background: #fdf0ee;
+  padding: 0.6rem 1rem;
+  border-radius: var(--radius-sm);
+  border: 1px solid #f5c6c0;
+}
+
+.login-btn {
+  width: 100%;
+  padding: 0.9rem 1rem;
+  background: linear-gradient(135deg, var(--brand-green-dark), var(--brand-green));
+  color: #fff;
+  border: none;
+  border-radius: 10px;
+  font-size: 1rem;
+  font-weight: 700;
+  letter-spacing: 0.3px;
+  cursor: pointer;
+  transition: opacity var(--transition-fast), transform var(--transition-fast), box-shadow var(--transition-fast);
+  box-shadow: 0 4px 14px rgba(107,158,122,0.35);
+}
+
+.login-btn:hover {
+  opacity: 0.92;
+  transform: translateY(-1px);
+  box-shadow: 0 6px 20px rgba(107,158,122,0.45);
+}
+
+.login-btn:active {
+  transform: translateY(0);
+}
+
+/* ==========================================================================
+   Dashboard Wrapper & Layout
+   ========================================================================== */
+.admin-dashboard {
+  min-height: 100vh;
+  background: linear-gradient(160deg, #f7faf8 0%, #eef5f1 60%, #fdfcfb 100%);
+  padding: 0;
+  padding-top: 50px;
+  /* Subtle 4px brand accent across the very top of the viewport */
+  box-shadow: inset 0 4px 0 var(--brand-green);
+}
+
+.dashboard-centered {
+  max-width: 1100px;
+  margin: 0 auto;
+  min-height: calc(100vh - 50px);
+}
+
+.bookings-section {
+  padding: 2rem 1.5rem;
+  width: 100%;
+  box-sizing: border-box;
+}
+
+/* ==========================================================================
+   Admin Header Card
+   ========================================================================== */
+.admin-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 2rem;
+  padding: 1.75rem 2rem;
+  background: linear-gradient(130deg, var(--brand-forest) 0%, var(--brand-green-deep) 100%);
+  border-radius: var(--radius-lg);
+  box-shadow: 0 6px 28px rgba(26, 46, 36, 0.28);
+  border-bottom: none;
+  position: relative;
+  overflow: hidden;
+}
+
+/* Subtle sheen on the header */
+.admin-header::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 1px;
+  background: linear-gradient(90deg, transparent, rgba(255,255,255,0.12), transparent);
+  pointer-events: none;
+}
+
+.admin-header h1 {
+  color: #fff;
+  font-size: 1.95rem;
+  font-weight: 800;
+  margin: 0 0 0.3rem;
+  letter-spacing: -0.4px;
+}
+
+.header-subtitle {
+  color: rgba(255, 255, 255, 0.65);
+  font-size: 0.875rem;
+  margin: 0;
+  font-weight: 400;
+}
+
+.logout-btn {
+  padding: 0.55rem 1.3rem;
+  border: 1.5px solid rgba(255, 255, 255, 0.55);
+  border-radius: 10px;
+  cursor: pointer;
+  font-size: 0.875rem;
+  font-weight: 600;
+  letter-spacing: 0.3px;
+  background: transparent;
+  color: rgba(255, 255, 255, 0.9);
+  transition: background var(--transition-fast), border-color var(--transition-fast), color var(--transition-fast);
+  white-space: nowrap;
+}
+
+.logout-btn:hover {
+  background: rgba(255, 255, 255, 0.14);
+  border-color: rgba(255, 255, 255, 0.85);
+  color: #fff;
+}
+
+/* ==========================================================================
+   Error Banner
+   ========================================================================== */
+.error-banner {
+  background: #fdf0ee;
+  color: #8b1c2c;
+  padding: 0.85rem 1.1rem;
+  border-radius: var(--radius-md);
+  margin-bottom: 1.25rem;
+  font-size: 0.875rem;
+  border: 1px solid #f5c6c0;
+  border-left: 4px solid #c0392b;
+}
+
+/* ==========================================================================
+   Loading State
+   ========================================================================== */
+.loading {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 5rem 2rem;
+  color: var(--text-muted);
+  font-size: 1rem;
+  gap: 1rem;
+}
+
+/* Animated three-dot indicator */
+.loading::after {
+  content: '';
+  display: block;
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  border: 3px solid var(--brand-green-light);
+  border-top-color: var(--brand-green);
+  animation: loading-spin 0.75s linear infinite;
+}
+
+@keyframes loading-spin {
+  to { transform: rotate(360deg); }
+}
+
+/* ==========================================================================
+   Tab Bar
+   ========================================================================== */
+.tab-bar {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 0.55rem;
+  margin-bottom: 1.75rem;
+}
+
+.tab {
+  padding: 0.7rem 0.6rem;
+  border: none;
+  background: var(--brand-green-light);
+  cursor: pointer;
+  font-size: 0.8rem;
+  font-weight: 600;
+  letter-spacing: 0.2px;
+  color: var(--text-secondary);
+  border-radius: var(--radius-pill);
+  transition: background var(--transition-fast), color var(--transition-fast),
+              box-shadow var(--transition-fast), transform var(--transition-fast);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.4rem;
+  text-align: center;
+}
+
+.tab:hover {
+  background: rgba(107, 158, 122, 0.15);
+  color: var(--brand-green-deep);
+  transform: translateY(-1px);
+}
+
+.tab.active {
+  background: var(--brand-green);
+  color: #fff;
+  box-shadow: var(--shadow-green);
+  transform: translateY(-1px);
+}
+
+.tab.active:hover {
+  background: var(--brand-green-dark);
+}
+
+.tab-full {
+  grid-column: 1 / -1;
+}
+
+.tab-icon {
+  font-size: 1.2rem;
+}
+
+/* Count badges on tabs */
+.tab-count {
+  background: #e84040;
+  color: #fff;
+  font-size: 0.68rem;
+  font-weight: 700;
+  padding: 0.18rem 0.5rem;
+  border-radius: var(--radius-pill);
+  min-width: 1.2rem;
+  text-align: center;
+  line-height: 1.4;
+}
+
+.tab-count-blue {
+  background: #3b82f6;
+  color: #fff;
+  font-size: 0.68rem;
+  font-weight: 700;
+  padding: 0.18rem 0.5rem;
+  border-radius: var(--radius-pill);
+  min-width: 1.2rem;
+  text-align: center;
+  line-height: 1.4;
+}
+
+.tab-count-orange {
+  background: var(--accent-amber);
+  color: #fff;
+  font-size: 0.68rem;
+  font-weight: 700;
+  padding: 0.18rem 0.5rem;
+  border-radius: var(--radius-pill);
+  min-width: 1.2rem;
+  text-align: center;
+  line-height: 1.4;
+}
+
+/* ==========================================================================
+   Today Header Banner
+   ========================================================================== */
+.today-header {
+  background: linear-gradient(120deg, var(--brand-green-deep) 0%, var(--brand-green) 100%);
+  padding: 1.4rem 1.75rem;
+  border-radius: var(--radius-lg);
+  margin-bottom: 1.5rem;
+  box-shadow: 0 4px 16px rgba(45, 82, 64, 0.25);
+  position: relative;
+  overflow: hidden;
+}
+
+.today-header::before {
+  content: '';
+  position: absolute;
+  right: -20px;
+  top: -20px;
+  width: 120px;
+  height: 120px;
+  background: rgba(255,255,255,0.06);
+  border-radius: 50%;
+  pointer-events: none;
+}
+
+.today-header h2 {
+  margin: 0;
+  color: #fff;
+  font-size: 1.5rem;
+  font-weight: 700;
+  letter-spacing: -0.3px;
+}
+
+/* ==========================================================================
+   Helper Text / Info Banner
+   ========================================================================== */
+.helper-text {
+  background: var(--accent-amber-light);
+  border-left: 4px solid var(--accent-amber);
+  padding: 0.85rem 1.1rem;
+  margin-bottom: 1.1rem;
+  border-radius: 0 var(--radius-sm) var(--radius-sm) 0;
+  color: #7c5404;
+  font-size: 0.875rem;
+  line-height: 1.5;
+}
+
+/* ==========================================================================
+   Bookings List
+   ========================================================================== */
+.bookings-list {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+  padding-bottom: 2.5rem;
+}
+
+/* ==========================================================================
+   Empty State
+   ========================================================================== */
+.no-bookings {
+  text-align: center;
+  padding: 4.5rem 2rem;
+  background: linear-gradient(160deg, #f0f7f3 0%, #f7faf5 100%);
+  border-radius: var(--radius-lg);
+  border: 1px solid rgba(107,158,122,0.12);
+  box-shadow: var(--shadow-sm);
+}
+
+.empty-icon {
+  font-size: 4rem;
+  margin-bottom: 1.25rem;
+  display: block;
+}
+
+.no-bookings h3 {
+  color: var(--text-primary);
+  margin: 0 0 0.6rem;
+  font-size: 1.35rem;
+  font-weight: 700;
+}
+
+.no-bookings p {
+  color: var(--text-muted);
+  margin: 0;
+  font-size: 0.95rem;
+}
+
+/* ==========================================================================
+   Booking Card
+   ========================================================================== */
+.booking-card {
+  background: var(--bg-card);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-md);
+  overflow: hidden;
+  border: 1px solid var(--border-soft);
+  border-left: 3px solid var(--accent-amber);
+  transition: box-shadow var(--transition-mid), transform var(--transition-mid);
+  position: relative;
+}
+
+.booking-card:hover {
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.11);
+  transform: translateY(-2px);
+}
+
+/* Status-based left border colours */
+.booking-card.approved {
+  border-left-color: var(--status-approved);
+}
+
+.booking-card.declined {
+  border-left-color: var(--status-declined);
+  opacity: 0.72;
+}
+
+.booking-card.rescheduled {
+  border-left-color: var(--status-reschedule);
+  opacity: 0.88;
+}
+
+.booking-card.today {
+  border-left-color: var(--status-today);
+}
+
+/* Card Header */
+.card-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 1.15rem 1.5rem 0.9rem;
+  background: #fafaf9;
+  border-bottom: 1px solid rgba(0,0,0,0.05);
+}
+
+.time-badge {
+  background: var(--status-today);
+  color: #fff;
+  font-size: 1.05rem;
+  font-weight: 700;
+  letter-spacing: 0.3px;
+  padding: 0.45rem 0.9rem;
+  border-radius: var(--radius-sm);
+  margin-right: 1rem;
+  box-shadow: 0 2px 6px rgba(59,130,246,0.3);
+}
+
+.client-name {
+  margin: 0;
+  font-size: 1.3rem;
+  font-weight: 700;
+  color: var(--text-primary);
+  letter-spacing: -0.2px;
+}
+
+.reschedule-badge {
+  background: var(--status-reschedule-bg);
+  color: #7c4e12;
+  font-size: 0.72rem;
+  font-weight: 700;
+  padding: 0.3rem 0.75rem;
+  border-radius: var(--radius-pill);
+  letter-spacing: 0.2px;
+}
+
+/* Status Pills */
+.status-pill {
+  padding: 0.35rem 0.9rem;
+  border-radius: var(--radius-pill);
+  font-size: 0.72rem;
+  font-weight: 700;
+  letter-spacing: 0.3px;
+  text-transform: uppercase;
+}
+
+.status-pill.approved {
+  background: var(--status-approved-bg);
+  color: #1a6637;
+}
+
+.status-pill.declined {
+  background: var(--status-declined-bg);
+  color: #5e6e78;
+}
+
+.status-pill.rescheduled {
+  background: var(--status-reschedule-bg);
+  color: var(--status-reschedule);
+}
+
+/* Card Header Right */
+.card-header-right {
+  display: flex;
+  align-items: center;
+  gap: 0.55rem;
+  flex-wrap: wrap;
+}
+
+/* Client Type Pills */
+.client-type-pill {
+  padding: 0.25rem 0.65rem;
+  border-radius: var(--radius-pill);
+  font-size: 0.68rem;
+  font-weight: 700;
+  letter-spacing: 0.2px;
+}
+
+.client-type-pill.new {
+  background: #e8f0fd;
+  color: #1a4fbf;
+}
+
+.client-type-pill.returning {
+  background: #f4e8fd;
+  color: #6b1fa2;
+}
+
+/* Card Body */
+.card-body {
+  padding: 1.25rem 1.5rem;
+}
+
+.info-row {
+  display: flex;
+  margin-bottom: 0.75rem;
+  align-items: flex-start;
+}
+
+.info-row.highlight {
+  background: var(--accent-amber-light);
+  padding: 0.85rem 1rem;
+  margin-left: -1rem;
+  margin-right: -1rem;
+  border-radius: var(--radius-sm);
+}
+
+.info-label {
+  font-weight: 600;
+  color: var(--text-muted);
+  font-size: 0.85rem;
+  min-width: 88px;
+  flex-shrink: 0;
+  padding-top: 0.05rem;
+  letter-spacing: 0.1px;
+}
+
+.info-value {
+  color: var(--text-primary);
+  font-size: 0.925rem;
+  flex: 1;
+  line-height: 1.5;
+}
+
+.info-value.treatment {
+  color: var(--brand-green-deep);
+  font-weight: 600;
+}
+
+.info-value.datetime {
+  color: var(--text-primary);
+  font-weight: 500;
+}
+
+.info-value.available-time {
+  color: var(--accent-amber);
+  font-weight: 700;
+  font-size: 1.05rem;
+}
+
+.info-value.price {
+  color: #1d4d8f;
+  font-weight: 600;
+}
+
+.notes-box {
+  margin-top: 1rem;
+  padding-top: 1rem;
+  border-top: 1px solid rgba(0,0,0,0.06);
+}
+
+.client-notes {
+  margin: 0.5rem 0 0;
+  color: var(--text-secondary);
+  font-style: italic;
+  font-size: 0.875rem;
+  line-height: 1.6;
+}
+
+/* Reschedule Message Box */
+.reschedule-message-box {
+  margin-top: 1rem;
+  padding: 1rem 1.1rem;
+  background: var(--status-reschedule-bg);
+  border-radius: var(--radius-sm);
+  border-left: 3px solid var(--status-reschedule);
+}
+
+.reschedule-message {
+  margin: 0.5rem 0 0;
+  color: var(--text-secondary);
+  font-style: italic;
+  font-size: 0.875rem;
+  line-height: 1.6;
+}
+
+/* ==========================================================================
+   Card Action Buttons
+   ========================================================================== */
+.card-actions {
+  display: flex;
+  border-top: 1px solid rgba(0,0,0,0.06);
+}
+
+.btn-approve,
+.btn-reschedule {
+  flex: 1;
+  padding: 1rem 0.75rem;
+  border: none;
+  cursor: pointer;
+  font-size: 0.95rem;
+  font-weight: 700;
+  letter-spacing: 0.3px;
+  transition: all var(--transition-fast);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+}
+
+.btn-approve {
+  background: linear-gradient(135deg, var(--brand-green-dark), var(--brand-green));
+  color: #fff;
+}
+
+.btn-approve:hover {
+  background: linear-gradient(135deg, #3e8e5a, var(--brand-green-dark));
+  transform: translateY(-1px);
+  box-shadow: 0 4px 14px rgba(78,158,110,0.35);
+}
+
+.btn-approve:active {
+  transform: translateY(0);
+}
+
+.btn-reschedule {
+  background: #fffaef;
+  color: #8a5500;
+}
+
+.btn-reschedule:hover {
+  background: var(--accent-amber-light);
+  color: #7c4500;
+}
+
+.btn-decline-small {
+  padding: 1rem 1.1rem;
+  border: none;
+  cursor: pointer;
+  font-size: 0.95rem;
+  font-weight: 700;
+  background: #f5f4f1;
+  color: #bbb;
+  transition: all var(--transition-fast);
+  flex-shrink: 0;
+  border-left: 1px solid rgba(0,0,0,0.06);
+}
+
+.btn-decline-small:hover {
+  background: #fdecea;
+  color: #c0392b;
+}
+
+/* Cancel button (approved card) */
+.btn-cancel {
+  background: #dc3545;
+  color: #fff;
+  border: none;
+  padding: 10px 18px;
+  border-radius: 10px;
+  cursor: pointer;
+  font-weight: 700;
+  font-size: 0.875rem;
+  letter-spacing: 0.3px;
+  transition: all var(--transition-fast);
+  width: 100%;
+}
+
+.btn-cancel:hover {
+  background: #b02a37;
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(220, 53, 69, 0.3);
+}
+
+.btn-cancel:active {
+  transform: translateY(0);
+}
+
+/* ==========================================================================
+   Modal Overlay & Container
+   ========================================================================== */
+.modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(15, 26, 20, 0.65);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+  padding: 1.25rem;
+}
+
+.modal-content {
+  background: var(--bg-card);
+  border-radius: var(--radius-xl);
+  max-width: 900px;
+  width: 100%;
+  max-height: 90vh;
+  overflow-y: auto;
+  box-shadow: var(--shadow-xl), 0 0 0 1px rgba(255,255,255,0.06);
+  animation: modalSlideIn 0.22s ease-out;
+}
+
+@keyframes modalSlideIn {
+  from {
+    transform: translateY(-40px) scale(0.97);
+    opacity: 0;
+  }
+  to {
+    transform: translateY(0) scale(1);
+    opacity: 1;
+  }
+}
+
+/* Modal Header — same dark gradient as admin-header */
+.modal-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 1.5rem 1.75rem;
+  background: linear-gradient(130deg, var(--brand-forest) 0%, var(--brand-green-deep) 100%);
+  border-radius: var(--radius-xl) var(--radius-xl) 0 0;
+  border-bottom: none;
+}
+
+.modal-header h2 {
+  margin: 0;
+  color: #fff;
+  font-size: 1.35rem;
+  font-weight: 700;
+  letter-spacing: -0.2px;
+}
+
+.modal-close {
+  background: rgba(255,255,255,0.12);
+  border: 1px solid rgba(255,255,255,0.2);
+  font-size: 1.35rem;
+  color: rgba(255,255,255,0.8);
+  cursor: pointer;
+  line-height: 1;
+  padding: 0;
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: background var(--transition-fast), color var(--transition-fast);
+  flex-shrink: 0;
+}
+
+.modal-close:hover {
+  background: rgba(255,255,255,0.22);
+  color: #fff;
+}
+
+.modal-body {
+  padding: 1.75rem;
+}
+
+.modal-client-name {
+  font-size: 1.25rem;
+  font-weight: 700;
+  margin: 0 0 0.5rem;
+  color: var(--text-primary);
+}
+
+.modal-info {
+  color: var(--text-secondary);
+  margin: 0.3rem 0;
+  font-size: 0.95rem;
+}
+
+.modal-info.available-window {
+  background: var(--accent-amber-light);
+  padding: 0.85rem 1rem;
+  border-radius: var(--radius-sm);
+  border-left: 3px solid var(--accent-amber);
+  margin: 1rem 0;
+  font-size: 1rem;
+  color: #7c5404;
+}
+
+/* Calendar Section */
+.modal-calendar-section {
+  margin: 1.5rem 0;
+  border: 1.5px solid var(--border-medium);
+  border-radius: var(--radius-md);
+  overflow: hidden;
+}
+
+.modal-calendar-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0.9rem 1.2rem;
+  background: var(--bg-subtle);
+  border-bottom: 1.5px solid var(--border-medium);
+}
+
+.modal-calendar-label {
+  font-weight: 700;
+  color: var(--text-primary);
+  font-size: 0.9rem;
+}
+
+.modal-calendar-toggle {
+  display: flex;
+  gap: 0.5rem;
+}
+
+.modal-toggle-btn {
+  padding: 0.4rem 0.85rem;
+  background: #fff;
+  border: 1.5px solid var(--border-medium);
+  border-radius: var(--radius-sm);
+  cursor: pointer;
+  font-size: 0.82rem;
+  font-weight: 600;
+  color: var(--text-secondary);
+  transition: all var(--transition-fast);
+}
+
+.modal-toggle-btn:hover {
+  background: #f0f0ee;
+}
+
+.modal-toggle-btn.active {
+  background: var(--brand-green);
+  color: #fff;
+  border-color: var(--brand-green);
+  box-shadow: 0 2px 8px var(--brand-green-glow);
+}
+
+.modal-calendar-embed {
+  width: 100%;
+  height: 450px;
+  overflow: hidden;
+}
+
+.modal-calendar-iframe {
+  width: 100%;
+  height: 100%;
+  border: none;
+}
+
+/* Time Picker */
+.modal-time-picker {
+  margin-top: 1.5rem;
+}
+
+.modal-time-picker label {
+  display: block;
+  margin-bottom: 0.5rem;
+  font-weight: 700;
+  color: var(--text-primary);
+  font-size: 0.95rem;
+}
+
+.time-select {
+  width: 100%;
+  padding: 0.95rem 1rem;
+  font-size: 1.05rem;
+  border: 1.5px solid #d8e2dc;
+  border-radius: var(--radius-sm);
+  background: #fafdf9;
+  color: var(--text-primary);
+  cursor: pointer;
+  box-sizing: border-box;
+  transition: border-color var(--transition-fast), box-shadow var(--transition-fast);
+}
+
+.time-select:focus {
+  outline: none;
+  border-color: var(--brand-green);
+  box-shadow: 0 0 0 3px var(--brand-green-light);
+}
+
+/* Modal Action Buttons */
+.modal-actions {
+  padding: 1rem 1.75rem 1.75rem;
+  display: flex;
+  gap: 0.875rem;
+  flex-wrap: wrap;
+}
+
+.btn-modal-approve,
+.btn-modal-cancel {
+  flex: 1;
+  padding: 0.95rem 1rem;
+  border: none;
+  border-radius: 10px;
+  font-size: 0.95rem;
+  font-weight: 700;
+  letter-spacing: 0.3px;
+  cursor: pointer;
+  transition: all var(--transition-fast);
+  min-width: 120px;
+}
+
+.btn-modal-approve {
+  background: linear-gradient(135deg, var(--brand-green-dark), var(--brand-green));
+  color: #fff;
+  box-shadow: 0 3px 12px rgba(107,158,122,0.3);
+}
+
+.btn-modal-approve:hover {
+  background: linear-gradient(135deg, #3e8e5a, var(--brand-green-dark));
+  transform: translateY(-1px);
+  box-shadow: 0 6px 18px rgba(78,158,110,0.4);
+}
+
+.btn-modal-approve:active {
+  transform: translateY(0);
+}
+
+.btn-modal-cancel {
+  background: var(--bg-subtle);
+  color: var(--text-secondary);
+  border: 1.5px solid var(--border-medium);
+}
+
+.btn-modal-cancel:hover {
+  background: #e8e6e3;
+  color: var(--text-primary);
+}
+
+.btn-modal-reschedule {
+  flex: 1;
+  padding: 0.95rem 1rem;
+  border: none;
+  border-radius: 10px;
+  font-size: 0.95rem;
+  font-weight: 700;
+  letter-spacing: 0.3px;
+  cursor: pointer;
+  transition: all var(--transition-fast);
+  background: linear-gradient(135deg, #c87a10, var(--accent-amber));
+  color: #fff;
+  box-shadow: 0 3px 12px rgba(217, 119, 6, 0.28);
+  min-width: 120px;
+}
+
+.btn-modal-reschedule:hover {
+  background: linear-gradient(135deg, #a96509, #c87a10);
+  transform: translateY(-1px);
+  box-shadow: 0 6px 18px rgba(200, 100, 10, 0.38);
+}
+
+.btn-modal-reschedule:active {
+  transform: translateY(0);
+}
+
+/* Decline Modal Button */
+.btn-modal-decline {
+  background: #dc3545;
+  color: #fff;
+  border: none;
+  padding: 0.95rem 1.75rem;
+  border-radius: 10px;
+  cursor: pointer;
+  font-weight: 700;
+  font-size: 0.95rem;
+  letter-spacing: 0.3px;
+  transition: all var(--transition-fast);
+  min-width: 180px;
+}
+
+.btn-modal-decline:hover {
+  background: #b02a37;
+  transform: translateY(-1px);
+  box-shadow: 0 6px 16px rgba(220, 53, 69, 0.35);
+}
+
+.btn-modal-decline:active {
+  transform: translateY(0);
+}
+
+/* ==========================================================================
+   Client Type Selector (in approval modal)
+   ========================================================================== */
+.client-type-selector {
+  margin: 1.5rem 0;
+  padding: 1.1rem 1.2rem;
+  background: var(--bg-subtle);
+  border-radius: var(--radius-md);
+  border: 1px solid var(--border-soft);
+}
+
+.selector-label {
+  display: block;
+  font-weight: 700;
+  color: var(--text-primary);
+  font-size: 0.9rem;
+  margin-bottom: 0.85rem;
+}
+
+.client-type-options {
+  display: flex;
+  gap: 0.75rem;
+}
+
+.client-type-btn {
+  flex: 1;
+  padding: 0.75rem 0.5rem;
+  border: 1.5px solid var(--border-medium);
+  border-radius: var(--radius-sm);
+  background: #fff;
+  cursor: pointer;
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: var(--text-secondary);
+  transition: all var(--transition-fast);
+}
+
+.client-type-btn:hover {
+  border-color: #c0ccc5;
+  background: #f5f4f1;
+}
+
+.client-type-btn.active.new {
+  border-color: #1a4fbf;
+  background: #e8f0fd;
+  color: #1a4fbf;
+}
+
+.client-type-btn.active.returning {
+  border-color: #6b1fa2;
+  background: #f4e8fd;
+  color: #6b1fa2;
+}
+
+/* ==========================================================================
+   Reschedule Modal & Form
+   ========================================================================== */
+.reschedule-modal {
+  max-width: 600px;
+}
+
+.reschedule-form {
+  margin-top: 1.5rem;
+}
+
+.reschedule-form label {
+  display: block;
+  font-weight: 700;
+  color: var(--text-primary);
+  font-size: 0.95rem;
+  margin-bottom: 0.5rem;
+}
+
+.reschedule-textarea {
+  width: 100%;
+  padding: 1rem 1.1rem;
+  border: 1.5px solid #d8e2dc;
+  border-radius: var(--radius-sm);
+  font-size: 0.9rem;
+  font-family: inherit;
+  line-height: 1.6;
+  color: var(--text-primary);
+  background: #fafdf9;
+  resize: vertical;
+  min-height: 130px;
+  box-sizing: border-box;
+  transition: border-color var(--transition-fast), box-shadow var(--transition-fast);
+}
+
+.reschedule-textarea:focus {
+  outline: none;
+  border-color: var(--brand-green);
+  box-shadow: 0 0 0 3px var(--brand-green-light);
+}
+
+.reschedule-hint {
+  margin: 0.65rem 0 0;
+  color: var(--text-muted);
+  font-size: 0.78rem;
+  font-style: italic;
+}
+
+/* ==========================================================================
+   Add-To Tab — Section Headers
+   ========================================================================== */
+.addto-section-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin: 0 0 14px;
+  padding-bottom: 10px;
+  border-bottom: 2px solid #e0ece4;
+}
+
+.addto-section-title {
+  font-size: 1rem;
+  font-weight: 700;
+  color: var(--brand-forest);
+  margin: 0;
+  letter-spacing: -0.1px;
+}
+
+/* Small "+ Add" button */
+.btn-add-small {
+  background: none;
+  color: var(--brand-green);
+  border: 1.5px solid var(--brand-green);
+  padding: 5px 14px;
+  border-radius: var(--radius-pill);
+  font-size: 0.78rem;
+  font-weight: 700;
+  cursor: pointer;
+  transition: background var(--transition-fast), color var(--transition-fast);
+  white-space: nowrap;
+  letter-spacing: 0.2px;
+}
+
+.btn-add-small:hover {
+  background: var(--brand-green);
+  color: #fff;
+}
+
+/* ==========================================================================
+   Products Table
+   ========================================================================== */
+.products-table-wrap {
+  overflow-x: auto;
+  border-radius: var(--radius-md);
+  border: 1px solid var(--border-soft);
+}
+
+.products-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.875rem;
+}
+
+.products-table th {
+  text-align: left;
+  padding: 10px 14px;
+  background: #f2f7f4;
+  color: var(--brand-forest);
+  font-weight: 700;
+  border-bottom: 2px solid #d8ebe0;
+  font-size: 0.75rem;
+  text-transform: uppercase;
+  letter-spacing: 0.6px;
+}
+
+.products-table td {
+  padding: 12px 14px;
+  border-bottom: 1px solid rgba(0,0,0,0.05);
+  vertical-align: middle;
+  color: var(--text-primary);
+}
+
+.products-table tr:last-child td {
+  border-bottom: none;
+}
+
+.products-table tr:hover td {
+  background: #f6fbf7;
+}
+
+/* ==========================================================================
+   Toast Notifications
+   ========================================================================== */
+@keyframes toast-slide-in {
+  from {
+    opacity: 0;
+    transform: translateY(16px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.toast-container {
+  position: fixed;
+  bottom: 1.5rem;
+  right: 1.5rem;
+  z-index: 9999;
+  max-width: 420px;
+  width: calc(100vw - 3rem);
+  display: flex;
+  flex-direction: column;
+  gap: 0.6rem;
+}
+
+.toast {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.75rem;
+  background: #fff;
+  border-radius: 12px;
+  box-shadow: 0 6px 24px rgba(0, 0, 0, 0.14);
+  padding: 1rem 1.2rem;
+  border-left: 4px solid var(--brand-green);
+  font-size: 0.875rem;
+  line-height: 1.45;
+  color: var(--text-primary);
+}
+
+.toast.toast-enter {
+  animation: toast-slide-in 0.25s ease-out forwards;
+}
+
+.toast.success {
+  border-left-color: var(--brand-green);
+}
+
+.toast.warning {
+  border-left-color: var(--accent-amber);
+}
+
+.toast.error {
+  border-left-color: #dc2626;
+}
+
+.toast-message {
+  flex: 1;
+}
+
+.toast-close {
+  background: none;
+  border: none;
+  font-size: 1.15rem;
+  line-height: 1;
+  color: var(--text-muted);
+  cursor: pointer;
+  padding: 0;
+  margin-left: auto;
+  flex-shrink: 0;
+  transition: color var(--transition-fast);
+}
+
+.toast-close:hover {
+  color: var(--text-primary);
+}
+
+/* ==========================================================================
+   Responsive — Tablet (≤ 1200px)
+   ========================================================================== */
+@media (max-width: 1200px) {
+  .admin-dashboard {
+    padding-top: 30px;
+  }
+
+  .dashboard-centered {
+    min-height: auto;
+  }
+
+  .bookings-section {
+    padding: 1.5rem 1rem;
+  }
+}
+
+/* ==========================================================================
+   Responsive — Mobile (≤ 600px)
+   ========================================================================== */
+@media (max-width: 600px) {
+  .bookings-section {
+    padding: 1rem 0.75rem;
+  }
+
+  .admin-header {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 1rem;
+    padding: 1.3rem 1.25rem;
+  }
+
+  .admin-header h1 {
+    font-size: 1.5rem;
+  }
+
+  .logout-btn {
+    align-self: flex-start;
+  }
+
+  /* Keep 3-column grid on mobile */
+  .tab-bar {
+    grid-template-columns: repeat(3, 1fr);
+    gap: 0.4rem;
+  }
+
+  .tab {
+    font-size: 0.7rem;
+    padding: 0.6rem 0.25rem;
+  }
+
+  .tab-icon {
+    font-size: 1rem;
+  }
+
+  .card-header {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 0.6rem;
+    padding: 1rem 1.1rem 0.75rem;
+  }
+
+  .time-badge {
+    margin-right: 0;
+  }
+
+  .client-name {
+    font-size: 1.1rem;
+  }
+
+  .card-body {
+    padding: 1rem 1.1rem;
+  }
+
+  .info-row {
+    flex-direction: column;
+    gap: 0.15rem;
+    margin-bottom: 0.65rem;
+  }
+
+  .info-label {
+    min-width: auto;
+  }
+
+  .today-header h2 {
+    font-size: 1.2rem;
+  }
+
+  .modal-content {
+    border-radius: var(--radius-lg);
+  }
+
+  .modal-header {
+    border-radius: var(--radius-lg) var(--radius-lg) 0 0;
+    padding: 1.25rem;
+  }
+
+  .modal-body {
+    padding: 1.25rem;
+  }
+
+  .modal-actions {
+    padding: 0.75rem 1.25rem 1.25rem;
+    flex-direction: column;
+  }
+
+  .modal-calendar-embed {
+    height: 350px;
+  }
+
+  .modal-calendar-header {
+    flex-direction: column;
+    gap: 0.75rem;
+    align-items: stretch;
+  }
+
+  .modal-calendar-toggle {
+    justify-content: center;
+  }
+
+  .calendar-section {
+    height: 400px;
+  }
+
+  .client-type-options {
+    flex-direction: column;
+  }
+
+  .toast-container {
+    bottom: 1rem;
+    right: 0.75rem;
+    left: 0.75rem;
+    width: auto;
+    max-width: none;
+  }
+}

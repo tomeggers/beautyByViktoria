@@ -17,11 +17,11 @@ const priceList = [
     },
     {
         category: "Nails",
-        description: "Discover CND the global leader in professional nail care. With award winning, science backed products.",
+        description: "CND — the global leader in professional nail care — used for all manicure treatments. Gel nails are done with Magpie Beauty products; rich colour, brilliant shine, long-lasting wear, and no nasty chemicals.",
         items: [
             { name: "File & Paint", time: "30 mins", price: "$40" },
-            { name: "Gel nails", time: "45 mins", price: "$65" },
-            { name: "Gel removal + reapplication", time: "60 mins", price: "$75" },
+            { name: "Gel nails", time: "1 hr", price: "$65" },
+            { name: "Gel removal + reapplication", time: "1 hr 30 min", price: "$75" },
             { name: "Spa manicure", time: "60 mins", price: "$75" },
             { name: "Spa manicure with paraffin mask", time: "75 mins", price: "$90" },
             { name: "Gel nails & gel toes", time: "90 mins", price: "$120" },
@@ -54,7 +54,7 @@ const priceList = [
     },
     {
         category: "Facials",
-        description: "Joyce Blok – New Zealand's First Locally Developed Beauty Therapy Brand. Celebrating over 50 years of caring for Kiwi skin, Joyce Blok is proudly formulated to meet the unique demands of our climate and skincare needs. Our products are kind to your skin and gentle on the environment.",
+        description: "Proud stockist of Dermalogica and Joyce Blok skincare. I use and recommend these premium, results-driven ranges in all treatments to deliver an elevated skincare experience. Each facial is thoughtfully tailored using advanced formulations and professional techniques to nurture your skin, restore balance, and reveal a radiant, healthy glow.",
         items: [
             {
                 name: "Mini Express",
@@ -63,16 +63,22 @@ const priceList = [
                 description: "Perfect for busy people on the run. This treatment includes cleansing, exfoliation and a mask selected to suit the needs of your skin all while being pampered and your skin thanking you for it.",
             },
             {
-                name: "Total Bliss",
+                name: "Joyce Blok Bliss Facial",
                 time: "60 min",
                 price: "$100",
                 description: "A made to measure treatment to suit your skins needs. Including cleansing toner, exfoliation facial, neck & foot massage. A mask especially selected to rebalance & nourish your skin for a refreshed, revitalised complexion.",
             },
             {
-                name: "Antioxidant Thermal",
-                time: "75 min",
-                price: "$115",
-                description: "Fight the environmental changes that contribute to premature ageing by neutralising those harmful free radicals with this restorative facial. leaving your skin and you feeling totally pampered.",
+                name: "Relaxing Dermalogica Facial",
+                time: "60 min",
+                price: "$120",
+                description: "A soothing customised facial using Dermalogica products to cleanse, exfoliate, and hydrate the skin, leaving it refreshed and glowing.",
+            },
+            {
+                name: "Dermalogica Nano Fusion Facial",
+                time: "60 min",
+                price: "$160",
+                description: "A results-driven advanced skin treatment that uses nano-infusion technology to enhance the penetration of professional Dermalogica serums. This facial helps to improve skin hydration, smooth fine lines, refine texture, and boost overall skin radiance with no downtime, leaving your skin plump, glowing, and rejuvenated.",
             },
         ],
     },
@@ -177,6 +183,7 @@ export default function PriceList() {
                 ))}
 
                 <div className="footer-notes">
+                    <p className="gst-notice">All prices are in NZD and include GST.</p>
                     <p>
                         <strong>Cancellations:</strong> If you wish to cancel your appointment please give 24 hours' notice, otherwise a 50% fee will apply.
                     </p>

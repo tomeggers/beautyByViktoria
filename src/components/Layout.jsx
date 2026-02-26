@@ -7,7 +7,7 @@ export default function Layout() {
     <>
       <LogoHeader />
       <MobileNav />
-      <main style={{ paddingTop: '120px', paddingBottom: '80px' }}>
+      <main style={{ paddingTop: '230px', paddingBottom: '80px' }}>
         <Outlet />
       </main>
     </>

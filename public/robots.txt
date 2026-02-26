@@ -1,5 +1,5 @@
 # https://www.robotstxt.org/robotstxt.html
 User-agent: *
 Allow: /
+Disallow: /admin
 Sitemap: https://beautybyviktoria.com/sitemap.xml
-Disallow:

@@ -1,13 +1,47 @@
 /* App.css */
 
 .app-main {
-  padding-top: 180px;
+  padding-top: 160px;
   padding-bottom: 80px;
+  padding-left: 0;
+  padding-right: 0;
+}
+
+/* Remove padding and body margin-top for admin page */
+.app-main:has([class*="admin"]) {
+  padding-top: 0;
+  padding-bottom: 0;
+}
+
+body:has([class*="admin"]) {
+  margin-top: 0;
 }
 
 @media (max-width: 767px) {
   .app-main {
     padding-top: calc(150px + env(safe-area-inset-top));
     padding-bottom: 80px;
+    padding-left: 10px;
+    padding-right: 10px;
+  }
+
+  /* Admin page still needs the 10px horizontal padding on mobile */
+  .app-main:has([class*="admin"]) {
+    padding-top: 0;
+    padding-bottom: 0;
+    padding-left: 10px;
+    padding-right: 10px;
+  }
+}
+
+/* ── Promo banner active: push main content down by banner height ── */
+/* Desktop: 56px banner + 180px normal = 236px */
+.has-promo .app-main {
+  padding-top: 236px;
+}
+/* Mobile: 44px banner */
+@media (max-width: 767px) {
+  .has-promo .app-main {
+    padding-top: calc(150px + env(safe-area-inset-top) + 44px);
   }
 }

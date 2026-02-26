@@ -1,0 +1,73 @@
+/* ── Banner strip — fixed at the very top ── */
+.promo-banner {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 44px;       /* mobile height */
+  z-index: 1002;      /* above header (1001) and nav (1000) */
+}
+
+@media (min-width: 768px) {
+  .promo-banner {
+    height: 56px;     /* desktop — taller so it doesn't look lost under the logo header */
+  }
+}
+
+.promo-banner-inner {
+  height: 100%;
+  width: 100%;        /* fully span the viewport — no max-width cap */
+  padding: 0 24px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.promo-banner-text {
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
+  flex: 1;
+  justify-content: center;
+  flex-wrap: wrap;
+}
+
+.promo-title {
+  color: #fff;
+  font-weight: 700;
+  font-size: 0.95rem;
+  white-space: nowrap;
+}
+
+.promo-message {
+  color: rgba(255, 255, 255, 0.92);
+  font-size: 0.88rem;
+  line-height: 1;
+}
+
+.promo-dismiss {
+  background: none;
+  border: none;
+  color: rgba(255, 255, 255, 0.65);
+  font-size: 1.5rem;
+  line-height: 1;
+  cursor: pointer;
+  padding: 0 4px;
+  flex-shrink: 0;
+  transition: color 0.15s;
+}
+
+.promo-dismiss:hover {
+  color: #fff;
+}
+
+@media (max-width: 600px) {
+  .promo-banner-text {
+    flex-direction: column;
+    gap: 1px;
+    align-items: flex-start;
+  }
+  .promo-title  { font-size: 0.82rem; }
+  .promo-message{ font-size: 0.78rem; }
+}

@@ -12,7 +12,7 @@
   max-width: 1200px;
   margin: 0 auto;
   text-align: center;
-  padding: 1rem;
+  padding: 1px;
 }
 
 .header-logo {
@@ -22,13 +22,18 @@
   margin: 0 auto;
 }
 
+/* MobileNav handles all navigation — hide the inline nav */
+.main-nav {
+  display: none;
+}
+
 @media (min-width: 768px) {
   .header {
     position: fixed;
     top: 0;
     left: 0;
     z-index: 1001;
-    height: 120px;
+    height: 170px;
 
     border-bottom-left-radius: 0;
     border-bottom-right-radius: 0;
@@ -67,5 +72,17 @@
 
   .header-logo {
     width: 100px;
+  }
+}
+
+/* ── Promo banner active: shift header down by banner height ── */
+/* Mobile: 44px banner */
+.has-promo .header {
+  top: 44px;
+}
+/* Desktop: 56px banner */
+@media (min-width: 768px) {
+  .has-promo .header {
+    top: 56px;
   }
 }

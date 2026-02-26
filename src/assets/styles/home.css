@@ -1,13 +1,15 @@
-/* Global Reset and Font */
+/* ── Global Reset and Font ── */
 html, body {
   width: 100%;
   overflow-x: hidden;
+  margin-top: 60px;
 }
 
 body {
   font-family: 'Abel', sans-serif;
   margin: 0;
   padding: 0;
+  background-color: #fdfcfb;
   color: #333;
   line-height: 1.6;
 }
@@ -22,14 +24,15 @@ main {
   flex: 1;
 }
 
-/* Modern Hero Section */
+/* ── Modern Hero Section ── */
 .modern-hero {
-  background: #ffffff;
-  padding: 4rem 2rem 6rem 2rem;
+  background: linear-gradient(160deg, #f7faf8 0%, #eef5f1 60%, #fdfcfb 100%);
+  padding: 6rem 2rem 7rem;
   position: relative;
   overflow: hidden;
 }
 
+/* Decorative radial glow — top right */
 .modern-hero::before {
   content: '';
   position: absolute;
@@ -37,8 +40,22 @@ main {
   left: 0;
   right: 0;
   bottom: 0;
-  background: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><defs><pattern id="grain" width="100" height="100" patternUnits="userSpaceOnUse"><circle cx="50" cy="50" r="1" fill="%236B9E7A" opacity="0.1"/></pattern></defs><rect width="100" height="100" fill="url(%23grain)"/></svg>');
-  opacity: 0.3;
+  background: radial-gradient(ellipse 700px 600px at 80% 20%, rgba(107, 158, 122, 0.12) 0%, transparent 70%);
+  pointer-events: none;
+  z-index: 0;
+}
+
+/* Decorative radial glow — bottom left */
+.modern-hero::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: radial-gradient(ellipse 400px 400px at 10% 90%, rgba(107, 158, 122, 0.08) 0%, transparent 70%);
+  pointer-events: none;
+  z-index: 0;
 }
 
 .container {
@@ -60,24 +77,30 @@ main {
   max-width: 800px;
 }
 
+/* ── Hero Title ── */
 .hero-title {
-  font-size: 3.5rem;
-  font-weight: 700;
-  line-height: 1.1;
+  font-size: 2.8rem;
+  font-weight: 400;
+  line-height: 1.15;
   color: #2a4e3a;
   display: flex;
   flex-direction: column;
   align-items: center;
+  margin: 0;
 }
 
+/* Refined subtitle above the animated word */
 .text-primary {
-  color: #6B9E7A;
+  color: #5a8268;
   font-family: 'Abel', sans-serif;
-  font-weight: 500;
-  font-size: 2.8rem;
-  opacity: 0.9;
+  font-weight: 400;
+  font-size: 1.3rem;
+  letter-spacing: 0.5px;
+  text-transform: uppercase;
+  opacity: 1;
 }
 
+/* ── Animated Cycling Words ── */
 .animated-word-container {
   position: relative;
   height: 10rem;
@@ -90,9 +113,9 @@ main {
 
 .animated-word {
   position: absolute;
-  font-weight: 700;
-  color: #1a4d2e;
-  font-size: 3.5rem;
+  font-weight: 400;
+  color: #1a3d2b;
+  font-size: 4rem;
   text-align: center;
   left: 0;
   right: 0;
@@ -100,19 +123,21 @@ main {
   transform: translateY(-50%);
   white-space: nowrap;
   font-family: 'Playfair Display', serif;
-  text-shadow: 0 2px 4px rgba(0,0,0,0.1);
+  text-shadow: 0 2px 20px rgba(26, 61, 43, 0.12);
 }
 
+/* ── Hero Description ── */
 .hero-description {
-  font-size: 1.2rem;
-  color: #6c757d;
-  line-height: 1.7;
+  font-size: 1.1rem;
+  color: #6b7a74;
+  line-height: 1.8;
   margin-bottom: 2rem;
-  max-width: 600px;
+  max-width: 560px;
   margin-left: auto;
   margin-right: auto;
 }
 
+/* ── CTA Button Row ── */
 .hero-actions {
   display: flex;
   gap: 1rem;
@@ -120,28 +145,49 @@ main {
   flex-wrap: wrap;
 }
 
+/* Primary CTA */
 .cta-button-modern {
-  padding: 0.75rem 1.5rem;
-  background-color: #6B9E7A;
+  padding: 0.85rem 2rem;
+  background: linear-gradient(135deg, #4e9e6e, #6B9E7A);
   color: #fff;
   border: none;
-  border-radius: 0.5rem;
+  border-radius: 50px;
   cursor: pointer;
-  font-size: 1rem;
+  font-size: 0.95rem;
+  font-weight: 600;
   font-family: 'Abel', sans-serif;
-  transition: background-color 0.3s ease;
+  letter-spacing: 0.5px;
   display: flex;
   align-items: center;
   gap: 0.5rem;
+  transition: box-shadow 0.25s ease, transform 0.2s ease, background 0.2s ease;
+  text-decoration: none;
 }
 
 .cta-button-modern:hover {
-  background-color: #5a8c69;
+  box-shadow: 0 4px 16px rgba(107, 158, 122, 0.35);
+  transform: translateY(-2px);
+  background: linear-gradient(135deg, #459060, #5f9170);
 }
 
-/* About Me Section */
+/* Secondary (outline) CTA — applies when a second button has an outline variant */
+.cta-button-modern.outline {
+  background: transparent;
+  border: 2px solid #6B9E7A;
+  color: #6B9E7A;
+  box-shadow: none;
+}
+
+.cta-button-modern.outline:hover {
+  background: #6B9E7A;
+  color: #fff;
+  box-shadow: 0 4px 16px rgba(107, 158, 122, 0.3);
+  transform: translateY(-2px);
+}
+
+/* ── About Me / Hero Section ── */
 .hero {
-  padding: 4rem 2rem;
+  padding: 5rem 2rem;
   background: #ffffff;
   width: 100%;
 }
@@ -151,14 +197,17 @@ main {
   display: flex;
   align-items: center;
   gap: 3rem;
-  padding: 2rem;
-  border-radius: 1rem;
+  padding: 3rem;
+  border-radius: 24px;
   width: 100%;
   max-width: 1200px;
-  background: #ffffff;
+  background: linear-gradient(135deg, #f7faf8, #ffffff);
+  box-shadow: 0 8px 40px rgba(107, 158, 122, 0.1);
+  border: 1px solid rgba(107, 158, 122, 0.1);
   box-sizing: border-box;
 }
 
+/* ── About Me — Photo ── */
 .hero-image {
   flex: 1;
   position: relative;
@@ -169,18 +218,19 @@ main {
 .hero-image img {
   width: 100%;
   max-width: 450px;
-  border-radius: 2rem;
-  box-shadow: 0 20px 40px rgba(0,0,0,0.1);
+  border-radius: 20px;
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.12);
   display: block;
   transition: transform 0.3s ease, box-shadow 0.3s ease;
-  filter: contrast(1.1) brightness(1.05);
+  filter: contrast(1.05) brightness(1.03);
 }
 
 .hero-image img:hover {
   transform: translateY(-5px);
-  box-shadow: 0 25px 50px rgba(0,0,0,0.2);
+  box-shadow: 0 28px 60px rgba(0, 0, 0, 0.18);
 }
 
+/* Decorative offset background behind photo */
 .hero-image::before {
   content: '';
   position: absolute;
@@ -188,54 +238,72 @@ main {
   left: -10px;
   right: 10px;
   bottom: 10px;
-  background: linear-gradient(45deg, #6B9E7A, #8a9a8b);
-  border-radius: 2rem;
+  background: rgba(107, 158, 122, 0.15);
+  border-radius: 20px;
   z-index: -1;
-  opacity: 0.3;
 }
 
+/* ── About Me — Text ── */
 .hero-text {
   flex: 2;
   text-align: left;
 }
 
 .hero-text h1 {
-  font-size: 2.2rem;
+  font-size: 2rem;
+  font-weight: 700;
   margin-bottom: 1.5rem;
-  color: #2a4e3a;
+  color: #1a3d2b;
+  font-family: 'Playfair Display', serif;
+  line-height: 1.2;
 }
 
 .hero-text p {
+  color: #5a6b63;
+  line-height: 1.8;
   margin-bottom: 1rem;
 }
 
+/* About section CTA — same pill gradient as hero CTA */
 .cta-button {
-  padding: 0.75rem 1.5rem;
-  background-color: #6B9E7A;
+  display: inline-flex;
+  align-items: center;
+  padding: 0.85rem 2rem;
+  background: linear-gradient(135deg, #4e9e6e, #6B9E7A);
   color: #fff;
   border: none;
-  border-radius: 0.5rem;
+  border-radius: 50px;
   cursor: pointer;
-  font-size: 1rem;
+  font-size: 0.95rem;
+  font-weight: 600;
   font-family: 'Abel', sans-serif;
-  transition: background-color 0.3s ease;
+  letter-spacing: 0.5px;
   margin-top: 1rem;
+  text-decoration: none;
+  transition: box-shadow 0.25s ease, transform 0.2s ease, background 0.2s ease;
 }
 
 .cta-button:hover {
-  background-color: #5a8c69;
+  box-shadow: 0 4px 16px rgba(107, 158, 122, 0.35);
+  transform: translateY(-2px);
+  background: linear-gradient(135deg, #459060, #5f9170);
 }
 
-/* Social Media Section */
+/* ── Social Media Section ── */
 .social-media {
   text-align: center;
-  padding: 40px 20px;
-  background-color: #ffffff;
+  padding: 3rem 2rem;
+  background: linear-gradient(180deg, #ffffff, #f7faf8);
   margin-top: 0;
 }
 
 .social-media h2 {
-  color: #333;
+  color: #2a4e3a;
+  font-size: 1.3rem;
+  font-weight: 600;
+  letter-spacing: 0.5px;
+  text-transform: uppercase;
+  font-family: 'Abel', sans-serif;
   margin-bottom: 20px;
 }
 
@@ -248,31 +316,34 @@ main {
 .social-icon {
   width: 40px;
   height: 40px;
-  transition: transform 0.3s ease;
+  transition: transform 0.3s ease, filter 0.3s ease;
 }
 
 .social-icon:hover {
   transform: scale(1.1);
+  filter: drop-shadow(0 2px 6px rgba(107, 158, 122, 0.3));
 }
 
-/* Mobile Responsiveness */
+/* ── Responsive — 768px breakpoint ── */
 @media (max-width: 768px) {
+  html, body {
+    margin-top: 0;
+  }
+
   .modern-hero {
-    padding: 4rem 1rem;
+    padding: 4rem 1.5rem 5rem;
   }
 
   .hero-title {
-    font-size: 2.5rem;
+    font-size: 2.2rem;
   }
 
   .text-primary {
-    font-size: 2.2rem;
-    font-weight: 500;
-    opacity: 0.9;
+    font-size: 1.1rem;
   }
 
   .animated-word {
-    font-size: 2.5rem;
+    font-size: 3rem;
   }
 
   .animated-word-container {
@@ -280,7 +351,7 @@ main {
   }
 
   .hero-description {
-    font-size: 1.1rem;
+    font-size: 1rem;
   }
 
   .hero-actions {
@@ -289,13 +360,14 @@ main {
   }
 
   .hero {
-    padding: 2rem 1rem;
+    padding: 3rem 1rem;
   }
 
   .about-me {
     flex-direction: column;
     align-items: center;
-    padding: 1rem;
+    padding: 1.5rem;
+    gap: 2rem;
   }
 
   .about-me .hero-text {
@@ -320,7 +392,8 @@ main {
 
   .cta-button {
     width: 100%;
-    max-width: 200px;
+    max-width: 220px;
+    justify-content: center;
   }
 
   .social-icons {
@@ -333,23 +406,22 @@ main {
   }
 }
 
+/* ── Responsive — 480px breakpoint ── */
 @media (max-width: 480px) {
   .modern-hero {
-    padding: 3rem 1rem;
+    padding: 3.5rem 1rem 4.5rem;
   }
 
   .hero-title {
-    font-size: 2rem;
+    font-size: 1.9rem;
   }
 
   .text-primary {
-    font-size: 1.8rem;
-    font-weight: 500;
-    opacity: 0.9;
+    font-size: 1rem;
   }
 
   .animated-word {
-    font-size: 2.5rem;
+    font-size: 2.6rem;
   }
 
   .animated-word-container {
@@ -357,15 +429,15 @@ main {
   }
 
   .hero-description {
-    font-size: 1rem;
+    font-size: 0.95rem;
   }
 
   .hero {
-    padding: 1.5rem 1rem;
+    padding: 2rem 1rem;
   }
 
   .about-me {
-    padding: 1rem;
+    padding: 1.5rem;
   }
 
   .hero-image {

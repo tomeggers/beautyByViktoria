@@ -3,6 +3,8 @@ import { useNavigate } from 'react-router-dom';
 import { FaInstagram, FaFacebook } from 'react-icons/fa';
 import { useEffect, useMemo, useState } from "react";
 import { motion } from "framer-motion";
+import PromoSection from '../components/PromoSection';
+
 
 function Home() {
   const navigate = useNavigate();
@@ -27,6 +29,8 @@ function Home() {
   return (
     <div className="home">
       <main>
+        {/* Promo section — only shows when a section-type promo is active */}
+        <PromoSection />
         {/* Modern Animated Hero Section */}
         <section className="modern-hero">
           <div className="container">

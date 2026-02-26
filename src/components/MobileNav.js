@@ -1,5 +1,5 @@
 import { useNavigate } from 'react-router-dom';
-import { VscHome, VscArchive, VscCreditCard, VscCalendar } from 'react-icons/vsc';
+import { VscHome, VscArchive, VscCreditCard, VscCalendar, VscPackage } from 'react-icons/vsc';
 import '../assets/styles/MobileNav.css';
 
 export default function MobileNav() {
@@ -10,6 +10,7 @@ export default function MobileNav() {
       <button onClick={() => navigate('/')}><VscHome /><span>Home</span></button>
       <button onClick={() => navigate('/gallery')}><VscArchive /><span>Gallery</span></button>
       <button onClick={() => navigate('/price')}><VscCreditCard /><span>Prices</span></button>
+      <button onClick={() => navigate('/shop')}><VscPackage /><span>Shop</span></button>
       <button onClick={() => navigate('/book')}><VscCalendar /><span>Book</span></button>
     </nav>
   );
