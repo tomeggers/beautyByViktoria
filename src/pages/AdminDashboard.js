@@ -636,8 +636,6 @@ const AdminDashboard = ({ onLogout }) => {
   // ==================== RESCHEDULE ====================
 
   const openRescheduleModal = (booking) => {
-    const treatments = booking.booking_treatments || [];
-    
     // Pre-fill with a template message
     const defaultMessage = `Hi ${booking.name}! Unfortunately I'm not available on ${formatDate(booking.date)} between ${formatTimeRange(booking.time_range_start, booking.time_range_end)}. 
 
@@ -711,8 +709,6 @@ Viktoria`;
   // ==================== DECLINE ====================
 
   const openDeclineModal = (booking) => {
-    const treatments = booking.booking_treatments || [];
-    
     const defaultMessage = `I apologise, but I'm unable to accommodate your requested appointment time. If you'd like to book for a different date, please feel free to submit a new request.`;
     
     setDeclineModal({
