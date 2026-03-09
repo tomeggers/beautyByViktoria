@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import supabaseService from '../services/supabaseService';
+import { supabase } from '../config/supabase';
 import Toast from '../components/Toast';
 import '../assets/styles/admin.css';
 
@@ -9,6 +10,13 @@ const AdminDashboard = ({ onLogout }) => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
   const [tab, setTab] = useState('pending');
+  const [section, setSection] = useState('actions');
+
+  const switchSection = (key) => {
+    setSection(key);
+    const defaults = { actions: 'pending', schedule: 'today', rebook: 'rebook', shop: 'addto', marketing: 'promos' };
+    setTab(defaults[key]);
+  };
 
   // Calendar state
   const [viewMode, setViewMode] = useState('WEEK');
@@ -76,6 +84,25 @@ const AdminDashboard = ({ onLogout }) => {
   });
   const [summersetPercent, setSummersetPercent] = useState('');
 
+  // ── Approved tab month filter ──
+  const [approvedMonth, setApprovedMonth] = useState(() => {
+    const now = new Date();
+    return `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}`;
+  });
+
+  // ── Rebook tab state ──
+  const [rebookSearch, setRebookSearch] = useState('');
+  const [rebookClients, setRebookClients] = useState([]);
+  const [rebookLoading, setRebookLoading] = useState(false);
+  const [rebookSearched, setRebookSearched] = useState(false);
+  const [rebookTreatments, setRebookTreatments] = useState({ all: [], grouped: {} });
+  const [selectedRebookClient, setSelectedRebookClient] = useState(null);
+  const [rebookModal, setRebookModal] = useState({
+    isOpen: false, sourceBooking: null,
+    form: { date: '', time: '', clientType: 'returning', notes: '', selectedTreatments: [] }
+  });
+  const [rebookSubmitting, setRebookSubmitting] = useState(false);
+
   // ── Promotions state ──
   const [promotions, setPromotions] = useState([]);
   const [promosLoading, setPromosLoading] = useState(false);
@@ -89,6 +116,17 @@ const AdminDashboard = ({ onLogout }) => {
     editing: null,
     form: { name: '', category: '', description: '', price: '', image_url: '', display_order: 0, is_active: true }
   });
+
+  // ── Banner image upload state ──
+  const [bannerImages, setBannerImages] = useState([]);
+  const [bannerUploading, setBannerUploading] = useState(false);
+  const [showBannerGallery, setShowBannerGallery] = useState(false);
+  // ── Email blast image upload state ──
+  const [emailImageUploading, setEmailImageUploading] = useState(false);
+  const [showEmailGallery, setShowEmailGallery] = useState(false);
+  // ── Product image upload state ──
+  const [productImageUploading, setProductImageUploading] = useState(false);
+  const [showProductGallery, setShowProductGallery] = useState(false);
 
   const loadShopData = useCallback(async () => {
     setShopLoading(true);
@@ -200,7 +238,7 @@ const AdminDashboard = ({ onLogout }) => {
     if (tab === 'orders' || tab === 'addto') {
       loadShopData();
     }
-    if (tab === 'addto') {
+    if (tab === 'promos') {
       loadPromosData();
     }
     if (tab === 'stock') {
@@ -212,6 +250,11 @@ const AdminDashboard = ({ onLogout }) => {
     if (tab === 'stats') {
       loadStatsData(statsMonth);
     }
+    if (tab === 'rebook' && rebookTreatments.all.length === 0) {
+      supabaseService.getTreatments()
+        .then(data => setRebookTreatments(data))
+        .catch(err => console.error('Error loading treatments for rebook:', err));
+    }
     if (tab === 'vouchers') {
       setVouchersLoading(true);
       supabaseService.getGiftVouchers()
@@ -220,6 +263,21 @@ const AdminDashboard = ({ onLogout }) => {
         .finally(() => setVouchersLoading(false));
     }
   }, [tab, loadShopData, loadPromosData, loadStockData, loadEmailData, loadStatsData, emailBlast.audience, statsMonth]);
+
+  useEffect(() => {
+    if (rebookSearch.trim().length < 2) return;
+    const timer = setTimeout(() => {
+      setRebookLoading(true);
+      setRebookClients([]);
+      setSelectedRebookClient(null);
+      setRebookSearched(true);
+      supabaseService.searchClientHistory(rebookSearch.trim())
+        .then(clients => setRebookClients(clients))
+        .catch(err => { console.error('Rebook search failed:', err); showToast('error', 'Search failed. Please try again.'); })
+        .finally(() => setRebookLoading(false));
+    }, 300);
+    return () => clearTimeout(timer);
+  }, [rebookSearch]);
 
   // ==================== ORDER RESPONSE ====================
 
@@ -269,6 +327,17 @@ const AdminDashboard = ({ onLogout }) => {
     }
   };
 
+  const handleDeleteOrder = async (order) => {
+    if (!window.confirm(`Delete order from ${order.customer_name}? This cannot be undone.`)) return;
+    try {
+      await supabaseService.deleteShopOrder(order.id);
+      setOrders(prev => prev.filter(o => o.id !== order.id));
+    } catch (err) {
+      console.error('Failed to delete order:', err);
+      alert('Failed to delete order.');
+    }
+  };
+
   // ==================== VOUCHER MANAGEMENT ====================
 
   const handleVoucherStatus = async (voucher, newStatus) => {
@@ -314,7 +383,7 @@ const AdminDashboard = ({ onLogout }) => {
     });
   };
 
-  const closeProductModal = () => setProductModal(prev => ({ ...prev, isOpen: false, editing: null }));
+  const closeProductModal = () => { setProductModal(prev => ({ ...prev, isOpen: false, editing: null })); setShowProductGallery(false); };
 
   const handleSaveProduct = async () => {
     const f = productModal.form;
@@ -361,7 +430,88 @@ const AdminDashboard = ({ onLogout }) => {
     });
   };
 
-  const closePromoModal = () => setPromoModal(prev => ({ ...prev, isOpen: false, editing: null }));
+  const closePromoModal = () => {
+    setPromoModal(prev => ({ ...prev, isOpen: false, editing: null }));
+    setShowBannerGallery(false);
+  };
+
+  const loadBannerImages = async () => {
+    try {
+      const { data, error } = await supabase.storage
+        .from('banner-images')
+        .list('', { sortBy: { column: 'created_at', order: 'desc' } });
+      if (error) throw error;
+      const imgs = (data || [])
+        .filter(f => f.name !== '.emptyFolderPlaceholder')
+        .map(f => ({
+          name: f.name,
+          url: supabase.storage.from('banner-images').getPublicUrl(f.name).data.publicUrl
+        }));
+      setBannerImages(imgs);
+    } catch (err) {
+      console.error('Failed to load banner images:', err);
+    }
+  };
+
+  const uploadBannerImage = async (file) => {
+    setBannerUploading(true);
+    try {
+      const ext = file.name.split('.').pop();
+      const fileName = `banner-${Date.now()}.${ext}`;
+      const { error } = await supabase.storage
+        .from('banner-images')
+        .upload(fileName, file, { upsert: false });
+      if (error) throw error;
+      const { data } = supabase.storage.from('banner-images').getPublicUrl(fileName);
+      setPromoModal(prev => ({ ...prev, form: { ...prev.form, image_url: data.publicUrl } }));
+      await loadBannerImages();
+    } catch (err) {
+      console.error('Failed to upload image:', err);
+      alert('Failed to upload image. Please try again.');
+    } finally {
+      setBannerUploading(false);
+    }
+  };
+
+  const uploadEmailImage = async (file) => {
+    setEmailImageUploading(true);
+    try {
+      const ext = file.name.split('.').pop();
+      const fileName = `email-${Date.now()}.${ext}`;
+      const { error } = await supabase.storage
+        .from('banner-images')
+        .upload(fileName, file, { upsert: false });
+      if (error) throw error;
+      const { data } = supabase.storage.from('banner-images').getPublicUrl(fileName);
+      setEmailBlast(prev => ({ ...prev, imageUrl: data.publicUrl }));
+      await loadBannerImages();
+    } catch (err) {
+      console.error('Failed to upload email image:', err);
+      alert('Failed to upload image. Please try again.');
+    } finally {
+      setEmailImageUploading(false);
+    }
+  };
+
+  const uploadProductImage = async (file) => {
+    setProductImageUploading(true);
+    try {
+      const ext = file.name.split('.').pop();
+      const fileName = `product-${Date.now()}.${ext}`;
+      const { error } = await supabase.storage
+        .from('banner-images')
+        .upload(fileName, file, { upsert: false });
+      if (error) throw error;
+      const { data } = supabase.storage.from('banner-images').getPublicUrl(fileName);
+      setProductModal(prev => ({ ...prev, form: { ...prev.form, image_url: data.publicUrl } }));
+      await loadBannerImages();
+    } catch (err) {
+      console.error('Failed to upload product image:', err);
+      alert('Failed to upload image. Please try again.');
+    } finally {
+      setProductImageUploading(false);
+    }
+  };
 
   const handleSavePromo = async () => {
     const f = promoModal.form;
@@ -722,6 +872,160 @@ Viktoria`;
     }
   };
 
+  const handleCancelRescheduledSilent = async (booking) => {
+    if (!window.confirm(`Cancel booking for ${booking.name} without sending an email?`)) {
+      return;
+    }
+
+    try {
+      await supabaseService.updateBookingStatus(booking.id, 'cancelled');
+      setBookings(prev => prev.map(b =>
+        b.id === booking.id ? { ...b, status: 'cancelled' } : b
+      ));
+      loadBookings();
+    } catch (err) {
+      console.error('Error cancelling rescheduled booking:', err);
+      alert('Failed to cancel booking. Please try again.');
+    }
+  };
+
+  // ==================== REBOOK ====================
+
+  const getConflictsForSlot = (date, startTime, durationMins) => {
+    if (!date || !startTime) return [];
+    const toMins = (t) => { const [h, m] = t.split(':').map(Number); return h * 60 + m; };
+    const newStart = toMins(startTime);
+    const newEnd = newStart + (durationMins || 60);
+    return bookings.filter(b => {
+      if (b.status !== 'approved' || b.date !== date || !b.time) return false;
+      const existStart = toMins(b.time);
+      const existEnd = existStart + (b.total_duration || 60);
+      return newStart < existEnd && newEnd > existStart;
+    });
+  };
+
+  const getNextAvailableTime = (date, durationMins) => {
+    if (!date) return '09:00';
+    const toMins = (t) => { const [h, m] = t.split(':').map(Number); return h * 60 + m; };
+    const fromMins = (m) => `${String(Math.floor(m / 60)).padStart(2, '0')}:${String(m % 60).padStart(2, '0')}`;
+    const bookingsOnDay = bookings
+      .filter(b => b.status === 'approved' && b.date === date && b.time)
+      .map(b => ({ start: toMins(b.time), end: toMins(b.time) + (b.total_duration || 60) }))
+      .sort((a, b) => a.start - b.start);
+    let candidate = toMins('08:00');
+    const dayEnd = toMins('19:00');
+    for (const b of bookingsOnDay) {
+      if (candidate + (durationMins || 60) <= b.start) break;
+      if (candidate < b.end) candidate = b.end;
+    }
+    return candidate + (durationMins || 60) <= dayEnd ? fromMins(candidate) : '';
+  };
+
+  const openRebookModal = (sourceBooking, client) => {
+    const sourceTreatmentNames = (sourceBooking.booking_treatments || []).map(bt => bt.treatment_name);
+    const preSelected = rebookTreatments.all.filter(t => sourceTreatmentNames.includes(t.name));
+    const selectedTreatments = preSelected.length > 0
+      ? preSelected
+      : (sourceBooking.booking_treatments || []).map(bt => ({
+          id: bt.treatment_id || null,
+          name: bt.treatment_name,
+          duration_minutes: bt.duration_minutes,
+          price: bt.price,
+        }));
+    const approvedCount = client.bookings.filter(b => b.status === 'approved').length;
+    setRebookModal({
+      isOpen: true,
+      sourceBooking,
+      form: {
+        date: '',
+        time: '',
+        clientType: approvedCount > 1 ? 'returning' : 'new',
+        notes: sourceBooking.notes || '',
+        selectedTreatments,
+      }
+    });
+  };
+
+  const closeRebookModal = () => {
+    setRebookModal({ isOpen: false, sourceBooking: null, form: { date: '', time: '', clientType: 'returning', notes: '', selectedTreatments: [] } });
+    setRebookSubmitting(false);
+  };
+
+  const handleRebookSubmit = async () => {
+    const { form, sourceBooking } = rebookModal;
+    if (!form.date) { alert('Please select a date.'); return; }
+    if (!form.time) { alert('Please select a time.'); return; }
+    if (form.selectedTreatments.length === 0) { alert('Please select at least one treatment.'); return; }
+
+    const totalDuration = form.selectedTreatments.reduce((sum, t) => sum + (t.duration_minutes || 0), 0);
+    const conflicts = getConflictsForSlot(form.date, form.time, totalDuration || 60);
+    if (conflicts.length > 0) {
+      const ok = window.confirm(`There is already a booking at this time (${conflicts.map(c => c.name).join(', ')}). Continue anyway?`);
+      if (!ok) return;
+    }
+
+    const totalPrice = form.selectedTreatments.reduce((sum, t) => {
+      const n = parseFloat((t.price || '').toString().replace(/[^0-9.]/g, ''));
+      return sum + (isNaN(n) ? 0 : n);
+    }, 0);
+    const totalPriceStr = totalPrice > 0 ? `$${totalPrice.toFixed(0)}` : 'POA';
+    const name = sourceBooking?.name || selectedRebookClient?.name || '';
+    const email = sourceBooking?.email || selectedRebookClient?.email || '';
+    const phone = sourceBooking?.phone || selectedRebookClient?.phone || '';
+
+    setRebookSubmitting(true);
+    try {
+      const { id: bookingId } = await supabaseService.createAdminBooking({
+        name, email, phone,
+        date: form.date,
+        time: form.time,
+        notes: form.notes || null,
+        treatments: form.selectedTreatments,
+        clientType: form.clientType,
+        totalDuration: totalDuration || null,
+        totalPrice: totalPriceStr,
+        sourceBookingId: sourceBooking?.id || null,
+      });
+
+      const treatmentNames = form.selectedTreatments.map(t => t.name || t.treatment_name).join(', ') || 'Appointment';
+      const result = await supabaseService.sendNotification('approved', {
+        name, email, phone,
+        date: form.date,
+        time: form.time,
+        clientType: form.clientType,
+        treatmentNames,
+        total_duration: totalDuration || null,
+        total_price: totalPriceStr,
+        notes: form.notes || null,
+      }).catch(err => { console.error('Rebook notification failed:', err); return null; });
+
+      if (result?.calendarEventId) {
+        await supabaseService.updateBookingStatus(bookingId, 'approved', {
+          finalTime: form.time,
+          calendarEventId: result.calendarEventId
+        }).catch(err => console.error('Failed to store calendar event ID:', err));
+      }
+
+      closeRebookModal();
+      loadBookings();
+
+      if (!result) {
+        showToast('warning', 'Booking created but notifications failed. Check Supabase edge function logs.');
+      } else if (result.emailResults?.[0]?.ok && result.calendarEventId) {
+        showToast('success', 'Booking created — confirmation email sent and added to calendar.');
+      } else if (result.emailResults?.[0]?.ok) {
+        showToast('warning', 'Booking created — email sent, but calendar event was not created.');
+      } else {
+        showToast('warning', 'Booking created, but the client email may not have been delivered.');
+      }
+    } catch (err) {
+      console.error('Error creating rebook booking:', err);
+      showToast('error', 'Failed to create booking. Please try again.');
+    } finally {
+      setRebookSubmitting(false);
+    }
+  };
+
   // ==================== HELPERS ====================
 
   const generateTimeOptions = (startTime, endTime) => {
@@ -799,94 +1103,169 @@ Viktoria`;
 
           {error && <div className="error-banner">{error}</div>}
 
-          <div className="tab-bar">
-            {/* Row 1 — urgent/action tabs */}
+          {/* Section bar — top-level navigation */}
+          <div className="section-bar">
             <button
-              className={`tab ${tab === 'pending' ? 'active' : ''}`}
-              onClick={() => setTab('pending')}
+              className={`section-btn ${section === 'actions' ? 'active' : ''}`}
+              onClick={() => switchSection('actions')}
             >
-              <span className="tab-icon">⏳</span>
-              Requests
-              {pendingBookings.length > 0 && <span className="tab-count">{pendingBookings.length}</span>}
-            </button>
-            <button
-              className={`tab ${tab === 'rescheduled' ? 'active' : ''}`}
-              onClick={() => setTab('rescheduled')}
-            >
-              <span className="tab-icon">🔄</span>
-              Rescheduled
-              {rescheduledBookings.length > 0 && <span className="tab-count-orange">{rescheduledBookings.length}</span>}
-            </button>
-            <button
-              className={`tab ${tab === 'orders' ? 'active' : ''}`}
-              onClick={() => setTab('orders')}
-            >
-              <span className="tab-icon">🛍️</span>
-              Orders
-              {orders.filter(o => o.status === 'pending').length > 0 && (
-                <span className="tab-count">{orders.filter(o => o.status === 'pending').length}</span>
-              )}
-            </button>
-            <button
-              className={`tab ${tab === 'vouchers' ? 'active' : ''}`}
-              onClick={() => setTab('vouchers')}
-            >
-              <span className="tab-icon">🎟️</span>
-              Buy Gift Voucher
-              {vouchers.filter(v => v.status === 'pending').length > 0 && (
-                <span className="tab-count">{vouchers.filter(v => v.status === 'pending').length}</span>
-              )}
-            </button>
-            {/* Row 2 — secondary tabs */}
-            <button
-              className={`tab ${tab === 'approved' ? 'active' : ''}`}
-              onClick={() => setTab('approved')}
-            >
-              <span className="tab-icon">✓</span>
-              Approved
-            </button>
-            <button
-              className={`tab ${tab === 'addto' ? 'active' : ''}`}
-              onClick={() => setTab('addto')}
-            >
-              <span className="tab-icon">🎁</span>
-              Products & Promos
-            </button>
-            <button
-              className={`tab ${tab === 'stock' ? 'active' : ''}`}
-              onClick={() => setTab('stock')}
-            >
-              <span className="tab-icon">📦</span>
-              Stock
-              {stockProducts.filter(p => p.stock !== null && p.stock === 0).length > 0 && (
-                <span className="tab-count" style={{ background: '#c0392b' }}>
-                  {stockProducts.filter(p => p.stock !== null && p.stock === 0).length}
+              <span className="section-icon">⚡</span>
+              <span>Actions</span>
+              {(pendingBookings.length + rescheduledBookings.length +
+                orders.filter(o => o.status === 'pending').length +
+                vouchers.filter(v => v.status === 'pending').length) > 0 && (
+                <span className="section-count">
+                  {pendingBookings.length + rescheduledBookings.length +
+                   orders.filter(o => o.status === 'pending').length +
+                   vouchers.filter(v => v.status === 'pending').length}
                 </span>
               )}
             </button>
             <button
-              className={`tab ${tab === 'email' ? 'active' : ''}`}
-              onClick={() => setTab('email')}
+              className={`section-btn ${section === 'schedule' ? 'active' : ''}`}
+              onClick={() => switchSection('schedule')}
             >
-              <span className="tab-icon">✉️</span>
-              Email
+              <span className="section-icon">📅</span>
+              <span>Schedule</span>
+              {todaysBookings.length > 0 && (
+                <span className="section-count section-count-blue">{todaysBookings.length}</span>
+              )}
             </button>
             <button
-              className={`tab ${tab === 'stats' ? 'active' : ''}`}
-              onClick={() => setTab('stats')}
+              className={`section-btn ${section === 'rebook' ? 'active' : ''}`}
+              onClick={() => switchSection('rebook')}
             >
-              <span className="tab-icon">📊</span>
-              Stats
+              <span className="section-icon">🔁</span>
+              <span>Rebook</span>
             </button>
-            {/* Row 3 — Today spans full width */}
             <button
-              className={`tab tab-full ${tab === 'today' ? 'active' : ''}`}
-              onClick={() => setTab('today')}
+              className={`section-btn ${section === 'shop' ? 'active' : ''}`}
+              onClick={() => switchSection('shop')}
             >
-              <span className="tab-icon">📅</span>
-              Today
-              {todaysBookings.length > 0 && <span className="tab-count-blue">{todaysBookings.length}</span>}
+              <span className="section-icon">🛍️</span>
+              <span>Shop</span>
             </button>
+            <button
+              className={`section-btn ${section === 'marketing' ? 'active' : ''}`}
+              onClick={() => switchSection('marketing')}
+            >
+              <span className="section-icon">📣</span>
+              <span>Marketing</span>
+            </button>
+          </div>
+
+          {/* Sub-tab bar — changes based on active section */}
+          <div className="tab-bar">
+            {section === 'actions' && (
+              <>
+                <button
+                  className={`tab ${tab === 'pending' ? 'active' : ''}`}
+                  onClick={() => setTab('pending')}
+                >
+                  <span className="tab-icon">⏳</span>
+                  Requests
+                  {pendingBookings.length > 0 && <span className="tab-count">{pendingBookings.length}</span>}
+                </button>
+                <button
+                  className={`tab ${tab === 'rescheduled' ? 'active' : ''}`}
+                  onClick={() => setTab('rescheduled')}
+                >
+                  <span className="tab-icon">🔄</span>
+                  Reschedule
+                  {rescheduledBookings.length > 0 && <span className="tab-count-orange">{rescheduledBookings.length}</span>}
+                </button>
+                <button
+                  className={`tab ${tab === 'orders' ? 'active' : ''}`}
+                  onClick={() => setTab('orders')}
+                >
+                  <span className="tab-icon">🛍️</span>
+                  Orders
+                  {orders.filter(o => o.status === 'pending').length > 0 && (
+                    <span className="tab-count">{orders.filter(o => o.status === 'pending').length}</span>
+                  )}
+                </button>
+                <button
+                  className={`tab ${tab === 'vouchers' ? 'active' : ''}`}
+                  onClick={() => setTab('vouchers')}
+                >
+                  <span className="tab-icon">🎟️</span>
+                  Vouchers
+                  {vouchers.filter(v => v.status === 'pending').length > 0 && (
+                    <span className="tab-count">{vouchers.filter(v => v.status === 'pending').length}</span>
+                  )}
+                </button>
+              </>
+            )}
+
+            {section === 'schedule' && (
+              <>
+                <button
+                  className={`tab ${tab === 'today' ? 'active' : ''}`}
+                  onClick={() => setTab('today')}
+                >
+                  <span className="tab-icon">📅</span>
+                  Today
+                  {todaysBookings.length > 0 && <span className="tab-count-blue">{todaysBookings.length}</span>}
+                </button>
+                <button
+                  className={`tab ${tab === 'approved' ? 'active' : ''}`}
+                  onClick={() => setTab('approved')}
+                >
+                  <span className="tab-icon">✓</span>
+                  Approved
+                </button>
+              </>
+            )}
+
+            {section === 'shop' && (
+              <>
+                <button
+                  className={`tab ${tab === 'addto' ? 'active' : ''}`}
+                  onClick={() => setTab('addto')}
+                >
+                  <span className="tab-icon">🎁</span>
+                  Products
+                </button>
+                <button
+                  className={`tab ${tab === 'stock' ? 'active' : ''}`}
+                  onClick={() => setTab('stock')}
+                >
+                  <span className="tab-icon">📦</span>
+                  Stock
+                  {stockProducts.filter(p => p.stock !== null && p.stock === 0).length > 0 && (
+                    <span className="tab-count" style={{ background: '#c0392b' }}>
+                      {stockProducts.filter(p => p.stock !== null && p.stock === 0).length}
+                    </span>
+                  )}
+                </button>
+              </>
+            )}
+
+            {section === 'marketing' && (
+              <>
+                <button
+                  className={`tab ${tab === 'promos' ? 'active' : ''}`}
+                  onClick={() => setTab('promos')}
+                >
+                  <span className="tab-icon">🎉</span>
+                  Promos
+                </button>
+                <button
+                  className={`tab ${tab === 'email' ? 'active' : ''}`}
+                  onClick={() => setTab('email')}
+                >
+                  <span className="tab-icon">✉️</span>
+                  Email
+                </button>
+                <button
+                  className={`tab ${tab === 'stats' ? 'active' : ''}`}
+                  onClick={() => setTab('stats')}
+                >
+                  <span className="tab-icon">📊</span>
+                  Stats
+                </button>
+              </>
+            )}
           </div>
 
           {/* Helper text */}
@@ -938,7 +1317,7 @@ Viktoria`;
                           {booking.phone && (
                             <div className="info-row">
                               <span className="info-label">Phone:</span>
-                              <span className="info-value">{booking.phone}</span>
+                              <a href={`tel:${booking.phone}`} className="info-value">{booking.phone}</a>
                             </div>
                           )}
 
@@ -996,14 +1375,14 @@ Viktoria`;
                           {booking.phone && (
                             <div className="info-row">
                               <span className="info-label">Phone:</span>
-                              <span className="info-value">{booking.phone}</span>
+                              <a href={`tel:${booking.phone}`} className="info-value">{booking.phone}</a>
                             </div>
                           )}
 
                           {booking.email && (
                             <div className="info-row">
                               <span className="info-label">Email:</span>
-                              <span className="info-value">{booking.email}</span>
+                              <a href={`mailto:${booking.email}`} className="info-value">{booking.email}</a>
                             </div>
                           )}
 
@@ -1043,69 +1422,311 @@ Viktoria`;
             )}
 
             {/* ==================== APPROVED ==================== */}
-            {tab === 'approved' && (
-              <>
-                {approvedBookings.length === 0 ? (
-                  <div className="no-bookings">
-                    <div className="empty-icon">📅</div>
-                    <h3>No approved bookings yet</h3>
-                    <p>Approved bookings will show here</p>
+            {tab === 'approved' && (() => {
+              const [selYear, selMonth] = approvedMonth.split('-').map(Number);
+              const monthApproved = approvedBookings.filter(b => {
+                if (!b.date) return false;
+                const d = new Date(b.date + 'T00:00:00');
+                return d.getFullYear() === selYear && d.getMonth() + 1 === selMonth;
+              }).sort((a, b) => a.date < b.date ? -1 : 1);
+
+              const newClients = monthApproved.filter(b => b.client_type === 'new').length;
+              const returningClients = monthApproved.filter(b => b.client_type === 'returning').length;
+              const today = new Date().toISOString().split('T')[0];
+              const upcoming = monthApproved.filter(b => b.date >= today).length;
+
+              const parsePrice = (p) => { const n = parseFloat((p || '').toString().replace(/[^0-9.]/g, '')); return isNaN(n) ? 0 : n; };
+              const monthRevenue = monthApproved.reduce((sum, b) => sum + parsePrice(b.total_price), 0);
+
+              const cardStyle = { flex: 1, background: '#f8f9fa', borderRadius: '10px', padding: '18px', textAlign: 'center', minWidth: '110px' };
+              const cardValue = { fontSize: '1.8rem', fontWeight: 700, color: '#2a4e3a', margin: '4px 0' };
+              const cardLabel = { fontSize: '0.8rem', color: '#888', margin: 0 };
+
+              return (
+                <>
+                  <div className="addto-section-header" style={{ marginBottom: '16px' }}>
+                    <h2 className="addto-section-title">✓ Approved Clients</h2>
+                    <input
+                      type="month"
+                      value={approvedMonth}
+                      onChange={e => setApprovedMonth(e.target.value)}
+                      style={{ border: '1px solid #ddd', borderRadius: '6px', padding: '6px 12px', fontSize: '0.85rem', outline: 'none' }}
+                    />
                   </div>
-                ) : (
-                  approvedBookings.map(booking => {
-                    const treatments = booking.booking_treatments || [];
-                    const treatmentNames = treatments.map(bt => bt.treatment_name).join(', ') || 'Not specified';
 
-                    return (
-                      <div key={booking.id} className="booking-card approved">
-                        <div className="card-header">
-                          <h3 className="client-name">{booking.name}</h3>
-                          <span className="status-pill approved">✓ Confirmed</span>
-                          {booking.client_type && (
-                            <span className={`client-type-pill ${booking.client_type}`}>
-                              {booking.client_type === 'new' ? '⭐ New' : '🔁 Returning'}
-                            </span>
-                          )}
-                        </div>
+                  <div style={{ display: 'flex', gap: '12px', flexWrap: 'wrap', marginBottom: '20px' }}>
+                    <div style={cardStyle}>
+                      <p style={cardLabel}>This Month</p>
+                      <p style={cardValue}>{monthApproved.length}</p>
+                      <p style={cardLabel}>approved</p>
+                    </div>
+                    <div style={cardStyle}>
+                      <p style={cardLabel}>Upcoming</p>
+                      <p style={cardValue}>{upcoming}</p>
+                      <p style={cardLabel}>still ahead</p>
+                    </div>
+                    <div style={cardStyle}>
+                      <p style={cardLabel}>New Clients</p>
+                      <p style={cardValue}>{newClients}</p>
+                      <p style={cardLabel}>⭐ first-timers</p>
+                    </div>
+                    <div style={cardStyle}>
+                      <p style={cardLabel}>Revenue</p>
+                      <p style={cardValue}>${monthRevenue.toFixed(0)}</p>
+                      <p style={cardLabel}>this month</p>
+                    </div>
+                  </div>
 
-                        <div className="card-body">
-                          <div className="info-row">
-                            <span className="info-label">Treatment:</span>
-                            <span className="info-value treatment">{treatmentNames}</span>
+                  {monthApproved.length === 0 ? (
+                    <div className="no-bookings">
+                      <div className="empty-icon">📅</div>
+                      <h3>No approved bookings for this month</h3>
+                      <p>Try selecting a different month above</p>
+                    </div>
+                  ) : (
+                    monthApproved.map(booking => {
+                      const treatments = booking.booking_treatments || [];
+                      const treatmentNames = treatments.map(bt => bt.treatment_name).join(', ') || 'Not specified';
+                      const isPast = booking.date < today;
+
+                      return (
+                        <div key={booking.id} className="booking-card approved" style={isPast ? { opacity: 0.65 } : {}}>
+                          <div className="card-header">
+                            <h3 className="client-name">{booking.name}</h3>
+                            <span className="status-pill approved">{isPast ? '✓ Completed' : '✓ Confirmed'}</span>
+                            {booking.client_type && (
+                              <span className={`client-type-pill ${booking.client_type}`}>
+                                {booking.client_type === 'new' ? '⭐ New' : '🔁 Returning'}
+                              </span>
+                            )}
                           </div>
 
-                          <div className="info-row">
-                            <span className="info-label">Date & Time:</span>
-                            <span className="info-value datetime">{formatDate(booking.date)} at {formatTime(booking.time)}</span>
-                          </div>
-
-                          {booking.phone && (
+                          <div className="card-body">
                             <div className="info-row">
-                              <span className="info-label">Phone:</span>
-                              <span className="info-value">{booking.phone}</span>
+                              <span className="info-label">Treatment:</span>
+                              <span className="info-value treatment">{treatmentNames}</span>
                             </div>
-                          )}
 
-                          {booking.notes && (
-                            <div className="notes-box">
-                              <span className="info-label">Notes:</span>
-                              <p className="notes-text">{booking.notes}</p>
+                            <div className="info-row">
+                              <span className="info-label">Date & Time:</span>
+                              <span className="info-value datetime">{formatDate(booking.date)} at {formatTime(booking.time)}</span>
                             </div>
-                          )}
 
-                          <button 
-                            className="btn-cancel" 
-                            onClick={() => handleCancelApproved(booking)}
-                            style={{ marginTop: '15px' }}
-                          >
-                            🗑️ Cancel Appointment
-                          </button>
+                            {booking.phone && (
+                              <div className="info-row">
+                                <span className="info-label">Phone:</span>
+                                <a href={`tel:${booking.phone}`} className="info-value">{booking.phone}</a>
+                              </div>
+                            )}
+
+                            {booking.email && (
+                              <div className="info-row">
+                                <span className="info-label">Email:</span>
+                                <a href={`mailto:${booking.email}`} className="info-value">{booking.email}</a>
+                              </div>
+                            )}
+
+                            {booking.notes && (
+                              <div className="notes-box">
+                                <span className="info-label">Notes:</span>
+                                <p className="notes-text">{booking.notes}</p>
+                              </div>
+                            )}
+
+                            {!isPast && (
+                              <button
+                                className="btn-cancel"
+                                onClick={() => handleCancelApproved(booking)}
+                                style={{ marginTop: '15px' }}
+                              >
+                                🗑️ Cancel Appointment
+                              </button>
+                            )}
+                          </div>
                         </div>
+                      );
+                    })
+                  )}
+                </>
+              );
+            })()}
+
+            {/* ==================== REBOOK ==================== */}
+            {tab === 'rebook' && (
+              <div>
+                <div className="addto-section-header" style={{ marginBottom: '16px' }}>
+                  <h2 className="addto-section-title">🔁 Rebook a Client</h2>
+                </div>
+
+                {!selectedRebookClient && (
+                  <>
+                    <input
+                      type="text"
+                      placeholder="Search client name or email..."
+                      value={rebookSearch}
+                      onChange={e => setRebookSearch(e.target.value)}
+                      style={{ width: '100%', border: '1px solid #ddd', borderRadius: '8px', padding: '10px 14px', fontSize: '0.9rem', outline: 'none', marginBottom: '12px', boxSizing: 'border-box' }}
+                    />
+
+                    {rebookLoading && (
+                      <div className="no-bookings"><p>Searching...</p></div>
+                    )}
+
+                    {rebookSearched && !rebookLoading && rebookClients.length === 0 && (
+                      <div className="no-bookings">
+                        <div className="empty-icon">🔍</div>
+                        <h3>No clients found</h3>
+                        <p>Try a different name or email address</p>
                       </div>
-                    );
-                  })
+                    )}
+
+                    {!rebookSearched && !rebookLoading && (
+                      <div className="no-bookings">
+                        <div className="empty-icon">🔁</div>
+                        <h3>Find a client to rebook</h3>
+                        <p>Type their name or email above</p>
+                      </div>
+                    )}
+
+                    {rebookClients.map(client => {
+                      const lastBooking = client.bookings[0];
+                      const approvedCount = client.bookings.filter(b => b.status === 'approved').length;
+                      const lastTreatments = (lastBooking?.booking_treatments || []).map(bt => bt.treatment_name).join(', ') || 'No treatments';
+                      return (
+                        <div key={client.email || client.name} className="booking-card approved">
+                          <div className="card-header" onClick={() => setSelectedRebookClient(client)} style={{ cursor: 'pointer' }}>
+                            <h3 className="client-name">{client.name}</h3>
+                            <span className="status-pill approved">{approvedCount} visit{approvedCount !== 1 ? 's' : ''}</span>
+                          </div>
+                          <div className="card-body" onClick={() => setSelectedRebookClient(client)} style={{ cursor: 'pointer' }}>
+                            {client.email && (
+                              <div className="info-row">
+                                <span className="info-label">Email:</span>
+                                <span className="info-value">{client.email}</span>
+                              </div>
+                            )}
+                            {client.phone && (
+                              <div className="info-row">
+                                <span className="info-label">Phone:</span>
+                                <span className="info-value">{client.phone}</span>
+                              </div>
+                            )}
+                            <div className="info-row">
+                              <span className="info-label">Last visit:</span>
+                              <span className="info-value">{lastBooking?.date ? formatDate(lastBooking.date) : 'Unknown'}</span>
+                            </div>
+                            <div className="info-row">
+                              <span className="info-label">Last treatment:</span>
+                              <span className="info-value treatment">{lastTreatments}</span>
+                            </div>
+                          </div>
+                          <div className="card-actions">
+                            <button className="btn-approve" onClick={() => openRebookModal(lastBooking, client)}>
+                              🔁 Rebook Last Visit
+                            </button>
+                            <button className="btn-reschedule" onClick={() => setSelectedRebookClient(client)}>
+                              View History
+                            </button>
+                          </div>
+                        </div>
+                      );
+                    })}
+                  </>
                 )}
-              </>
+
+                {selectedRebookClient && (
+                  <div>
+                    <button
+                      onClick={() => setSelectedRebookClient(null)}
+                      style={{ background: 'none', border: 'none', color: '#6B9E7A', cursor: 'pointer', fontSize: '0.9rem', padding: '0 0 12px 0', display: 'flex', alignItems: 'center', gap: '4px' }}
+                    >
+                      ← Back to search
+                    </button>
+
+                    <div className="booking-card approved" style={{ marginBottom: '16px' }}>
+                      <div className="card-header">
+                        <h3 className="client-name">{selectedRebookClient.name}</h3>
+                      </div>
+                      <div className="card-body">
+                        {selectedRebookClient.email && (
+                          <div className="info-row">
+                            <span className="info-label">Email:</span>
+                            <a href={`mailto:${selectedRebookClient.email}`} className="info-value">{selectedRebookClient.email}</a>
+                          </div>
+                        )}
+                        {selectedRebookClient.phone && (
+                          <div className="info-row">
+                            <span className="info-label">Phone:</span>
+                            <a href={`tel:${selectedRebookClient.phone}`} className="info-value">{selectedRebookClient.phone}</a>
+                          </div>
+                        )}
+                      </div>
+                    </div>
+
+                    {(() => {
+                      const totalVisits = selectedRebookClient.bookings.filter(b => b.status === 'approved').length;
+                      const lastVisit = selectedRebookClient.bookings.find(b => b.status === 'approved');
+                      const allTreatmentNames = selectedRebookClient.bookings.flatMap(b => (b.booking_treatments || []).map(bt => bt.treatment_name));
+                      const freq = {};
+                      allTreatmentNames.forEach(n => { freq[n] = (freq[n] || 0) + 1; });
+                      const mostBooked = Object.entries(freq).sort((a, b) => b[1] - a[1])[0]?.[0] || '—';
+                      const cardStyle = { flex: 1, background: '#f8f9fa', borderRadius: '10px', padding: '14px', textAlign: 'center', minWidth: '90px' };
+                      const cardValue = { fontSize: '1.5rem', fontWeight: 700, color: '#2a4e3a', margin: '4px 0' };
+                      const cardLabel = { fontSize: '0.75rem', color: '#888', margin: 0 };
+                      return (
+                        <div style={{ display: 'flex', gap: '12px', flexWrap: 'wrap', marginBottom: '16px' }}>
+                          <div style={cardStyle}>
+                            <p style={cardLabel}>Total Visits</p>
+                            <p style={cardValue}>{totalVisits}</p>
+                            <p style={cardLabel}>approved</p>
+                          </div>
+                          <div style={cardStyle}>
+                            <p style={cardLabel}>Last Visit</p>
+                            <p style={{ fontSize: '0.85rem', fontWeight: 700, color: '#2a4e3a', margin: '4px 0' }}>{lastVisit ? formatDate(lastVisit.date) : '—'}</p>
+                          </div>
+                          <div style={cardStyle}>
+                            <p style={cardLabel}>Most Booked</p>
+                            <p style={{ fontSize: '0.75rem', fontWeight: 700, color: '#2a4e3a', margin: '4px 0' }}>{mostBooked}</p>
+                          </div>
+                        </div>
+                      );
+                    })()}
+
+                    <h3 style={{ fontSize: '1rem', color: '#444', marginBottom: '12px' }}>Booking History</h3>
+
+                    {selectedRebookClient.bookings.map(booking => {
+                      const treatments = booking.booking_treatments || [];
+                      return (
+                        <div key={booking.id} className="booking-card" style={{ marginBottom: '8px', borderLeft: `3px solid ${booking.status === 'approved' ? '#27ae60' : '#e0e0e0'}` }}>
+                          <div className="card-header">
+                            <span className="info-value datetime">{formatDate(booking.date)}{booking.time ? ` at ${formatTime(booking.time)}` : ''}</span>
+                            <span className={`status-pill ${booking.status === 'approved' ? 'approved' : booking.status === 'pending' ? 'pending' : ''}`}>
+                              {booking.status === 'approved' ? '✓ Approved' : booking.status === 'pending' ? '⏳ Pending' : booking.status === 'cancelled' ? '✕ Cancelled' : booking.status === 'declined' ? '✕ Declined' : booking.status}
+                            </span>
+                          </div>
+                          <div className="card-body">
+                            {treatments.length > 0 ? treatments.map(t => (
+                              <div key={t.id} className="info-row" style={{ marginBottom: '2px' }}>
+                                <span className="info-value treatment">{t.treatment_name}</span>
+                                <span style={{ marginLeft: 'auto', color: '#888', fontSize: '0.85rem' }}>
+                                  {t.duration_minutes ? `${t.duration_minutes} min` : ''}{t.price ? ` · ${t.price}` : ''}
+                                </span>
+                              </div>
+                            )) : (
+                              <div className="info-row"><span className="info-value">No treatment details</span></div>
+                            )}
+                          </div>
+                          <div className="card-actions">
+                            <button className="btn-approve" style={{ fontSize: '0.85rem', padding: '6px 12px' }} onClick={() => openRebookModal(booking, selectedRebookClient)}>
+                              🔁 Rebook This
+                            </button>
+                          </div>
+                        </div>
+                      );
+                    })}
+                  </div>
+                )}
+              </div>
             )}
 
             {/* ==================== RESCHEDULED ==================== */}
@@ -1150,7 +1771,7 @@ Viktoria`;
                           {booking.phone && (
                             <div className="info-row">
                               <span className="info-label">Phone:</span>
-                              <span className="info-value">{booking.phone}</span>
+                              <a href={`tel:${booking.phone}`} className="info-value">{booking.phone}</a>
                             </div>
                           )}
                         </div>
@@ -1160,7 +1781,14 @@ Viktoria`;
                             className="btn-cancel"
                             onClick={() => handleCancelRescheduled(booking)}
                           >
-                            🗑️ Cancel Booking
+                            🗑️ Cancel & Email
+                          </button>
+                          <button
+                            className="btn-cancel"
+                            style={{ background: '#f0f0f0', color: '#666' }}
+                            onClick={() => handleCancelRescheduledSilent(booking)}
+                          >
+                            🗑️ Cancel (no email)
                           </button>
                         </div>
                       </div>
@@ -1195,7 +1823,7 @@ Viktoria`;
                         <div className="card-body">
                           <div className="info-row">
                             <span className="info-label">Email:</span>
-                            <span className="info-value">{order.email}</span>
+                            <a href={`mailto:${order.email}`} className="info-value">{order.email}</a>
                           </div>
                           <div className="info-row">
                             <span className="info-label">Fulfillment:</span>
@@ -1224,7 +1852,7 @@ Viktoria`;
                             <span className="info-value">{new Date(order.created_at).toLocaleDateString('en-NZ', { day: 'numeric', month: 'short', year: 'numeric' })}</span>
                           </div>
                         </div>
-                        <div className="card-actions">
+                        <div className="card-actions" style={{ position: 'relative' }}>
                           {order.status !== 'fulfilled' && (
                             <button className="btn-approve" onClick={() => openOrderModal(order)}>
                               📧 Respond to Order
@@ -1235,6 +1863,11 @@ Viktoria`;
                               ✓ Mark Fulfilled
                             </button>
                           )}
+                          <button
+                            onClick={() => handleDeleteOrder(order)}
+                            title="Delete order"
+                            style={{ position: 'absolute', bottom: 0, right: 0, width: '26px', height: '26px', border: 'none', borderRadius: '50%', background: '#e8e8e8', color: '#999', cursor: 'pointer', fontSize: '14px', lineHeight: '26px', textAlign: 'center', padding: 0, display: 'flex', alignItems: 'center', justifyContent: 'center' }}
+                          >×</button>
                         </div>
                       </div>
                     );
@@ -1426,7 +2059,12 @@ Viktoria`;
                   </div>
                 )}
 
-                {/* ── Promotions section ── */}
+              </>
+            )}
+
+            {/* ==================== PROMOS ==================== */}
+            {tab === 'promos' && (
+              <>
                 <div className="addto-section-header">
                   <h2 className="addto-section-title">🎉 Promotions</h2>
                   <button className="btn-add-small" onClick={openAddPromo}>+ Add Promotion</button>
@@ -1452,6 +2090,12 @@ Viktoria`;
                         </button>
                       </div>
                       <div className="card-body">
+                        {promo.type === 'section' && promo.image_url && (
+                          <div className="info-row">
+                            <span className="info-label">Image:</span>
+                            <img src={promo.image_url} alt="Promo" style={{ height: '60px', borderRadius: '6px', objectFit: 'cover', maxWidth: '120px' }} />
+                          </div>
+                        )}
                         <div className="info-row">
                           <span className="info-label">Message:</span>
                           <span className="info-value">{promo.message}</span>
@@ -1499,9 +2143,31 @@ Viktoria`;
                     </button>
                   )}
                 </div>
-                <p style={{ color: '#777', fontSize: '0.85rem', marginBottom: '16px', marginTop: '-8px' }}>
+                <p style={{ color: '#777', fontSize: '0.85rem', marginBottom: '12px', marginTop: '-8px' }}>
                   Set stock quantities per product. Leave blank to mark as untracked (no stock limit shown to customers). Stock auto-deducts when you mark an order as fulfilled.
                 </p>
+                {stockProducts.some(p => p.stock !== null) && (
+                  <div style={{ display: 'flex', gap: '12px', marginBottom: '16px', flexWrap: 'wrap' }}>
+                    {(() => {
+                      const tracked = stockProducts.filter(p => p.stock !== null);
+                      const outOfStock = tracked.filter(p => p.stock === 0);
+                      const lowStock = tracked.filter(p => p.stock > 0 && p.stock <= 5);
+                      return (
+                        <>
+                          <span style={{ background: outOfStock.length > 0 ? '#fdecea' : '#eaf5ea', color: outOfStock.length > 0 ? '#c0392b' : '#2e7d32', padding: '6px 14px', borderRadius: '20px', fontSize: '0.82rem', fontWeight: 600 }}>
+                            🚫 Out of stock: {outOfStock.length}
+                          </span>
+                          <span style={{ background: lowStock.length > 0 ? '#fff8e1' : '#eaf5ea', color: lowStock.length > 0 ? '#b8860b' : '#2e7d32', padding: '6px 14px', borderRadius: '20px', fontSize: '0.82rem', fontWeight: 600 }}>
+                            ⚠️ Low stock (≤5): {lowStock.length}
+                          </span>
+                          <span style={{ background: '#eaf5ea', color: '#2e7d32', padding: '6px 14px', borderRadius: '20px', fontSize: '0.82rem', fontWeight: 600 }}>
+                            ✓ Tracked: {tracked.length}
+                          </span>
+                        </>
+                      );
+                    })()}
+                  </div>
+                )}
                 <input
                   type="text"
                   placeholder="Search products..."
@@ -1678,15 +2344,37 @@ Viktoria`;
                     />
                   </div>
 
-                  <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
-                    <label style={{ fontSize: '0.85rem', fontWeight: 600, color: '#444' }}>Image URL (optional)</label>
-                    <input
-                      type="text"
-                      placeholder="https://... (paste an image URL for the email)"
-                      value={emailBlast.imageUrl}
-                      onChange={e => setEmailBlast(prev => ({ ...prev, imageUrl: e.target.value }))}
-                      style={{ border: '1px solid #ddd', borderRadius: '6px', padding: '9px 12px', fontSize: '0.9rem', outline: 'none' }}
-                    />
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                    <label style={{ fontSize: '0.85rem', fontWeight: 600, color: '#444' }}>Email Image (optional)</label>
+                    {emailBlast.imageUrl && (
+                      <div style={{ position: 'relative', display: 'inline-block' }}>
+                        <img src={emailBlast.imageUrl} alt="Email" style={{ height: '80px', borderRadius: '6px', objectFit: 'cover', border: '1px solid #ddd' }} />
+                        <button onClick={() => setEmailBlast(prev => ({ ...prev, imageUrl: '' }))} style={{ position: 'absolute', top: '-6px', right: '-6px', background: '#e74c3c', color: '#fff', border: 'none', borderRadius: '50%', width: '20px', height: '20px', cursor: 'pointer', fontSize: '12px', lineHeight: '20px', textAlign: 'center', padding: 0 }}>×</button>
+                      </div>
+                    )}
+                    <div style={{ display: 'flex', gap: '8px' }}>
+                      <label style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '6px', padding: '9px 12px', border: '1px dashed #6B9E7A', borderRadius: '6px', cursor: emailImageUploading ? 'not-allowed' : 'pointer', fontSize: '0.85rem', color: '#6B9E7A', background: '#f0f7f2', opacity: emailImageUploading ? 0.7 : 1 }}>
+                        {emailImageUploading ? 'Uploading…' : '↑ Upload from computer'}
+                        <input type="file" accept="image/*" style={{ display: 'none' }} disabled={emailImageUploading} onChange={e => { if (e.target.files[0]) uploadEmailImage(e.target.files[0]); e.target.value = ''; }} />
+                      </label>
+                      <button type="button" style={{ padding: '9px 14px', border: '1px solid #6B9E7A', borderRadius: '6px', background: '#fff', color: '#6B9E7A', cursor: 'pointer', fontSize: '0.85rem' }}
+                        onClick={() => { const next = !showEmailGallery; setShowEmailGallery(next); if (next) loadBannerImages(); }}
+                      >
+                        {showEmailGallery ? 'Hide gallery' : 'Browse uploads'}
+                      </button>
+                    </div>
+                    {showEmailGallery && (
+                      <div style={{ display: 'flex', flexWrap: 'wrap', gap: '8px', maxHeight: '160px', overflowY: 'auto', padding: '8px', background: '#f9f9f9', borderRadius: '6px', border: '1px solid #eee' }}>
+                        {bannerImages.length === 0 ? (
+                          <span style={{ color: '#aaa', fontSize: '0.8rem' }}>No images uploaded yet.</span>
+                        ) : bannerImages.map(img => (
+                          <img key={img.name} src={img.url} alt={img.name} title={img.name}
+                            onClick={() => { setEmailBlast(prev => ({ ...prev, imageUrl: img.url })); setShowEmailGallery(false); }}
+                            style={{ height: '64px', width: '64px', objectFit: 'cover', borderRadius: '4px', cursor: 'pointer', border: emailBlast.imageUrl === img.url ? '2px solid #6B9E7A' : '2px solid transparent' }}
+                          />
+                        ))}
+                      </div>
+                    )}
                   </div>
 
                   <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
@@ -2170,7 +2858,6 @@ Viktoria`;
               {[
                 { label: 'Product Name *', key: 'name', placeholder: 'e.g. Daily Microfoliant' },
                 { label: 'Description', key: 'description', placeholder: 'Short product description', multi: true },
-                { label: 'Image URL', key: 'image_url', placeholder: 'https://...' },
                 { label: 'Display Order', key: 'display_order', type: 'number' },
               ].map(({ label, key, placeholder, multi, type }) => (
                 <div key={key} style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
@@ -2195,6 +2882,40 @@ Viktoria`;
                   )}
                 </div>
               ))}
+
+              {/* Product image upload */}
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                <label style={{ fontSize: '0.85rem', fontWeight: 600, color: '#444' }}>Product Image</label>
+                {productModal.form.image_url && (
+                  <div style={{ position: 'relative', display: 'inline-block' }}>
+                    <img src={productModal.form.image_url} alt="Product" style={{ height: '80px', borderRadius: '6px', objectFit: 'cover', border: '1px solid #ddd' }} />
+                    <button onClick={() => setProductModal(prev => ({ ...prev, form: { ...prev.form, image_url: '' } }))} style={{ position: 'absolute', top: '-6px', right: '-6px', background: '#e74c3c', color: '#fff', border: 'none', borderRadius: '50%', width: '20px', height: '20px', cursor: 'pointer', fontSize: '12px', lineHeight: '20px', textAlign: 'center', padding: 0 }}>×</button>
+                  </div>
+                )}
+                <div style={{ display: 'flex', gap: '8px' }}>
+                  <label style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '6px', padding: '9px 12px', border: '1px dashed #6B9E7A', borderRadius: '6px', cursor: productImageUploading ? 'not-allowed' : 'pointer', fontSize: '0.85rem', color: '#6B9E7A', background: '#f0f7f2', opacity: productImageUploading ? 0.7 : 1 }}>
+                    {productImageUploading ? 'Uploading…' : '↑ Upload from computer'}
+                    <input type="file" accept="image/*" style={{ display: 'none' }} disabled={productImageUploading} onChange={e => { if (e.target.files[0]) uploadProductImage(e.target.files[0]); e.target.value = ''; }} />
+                  </label>
+                  <button type="button" style={{ padding: '9px 14px', border: '1px solid #6B9E7A', borderRadius: '6px', background: '#fff', color: '#6B9E7A', cursor: 'pointer', fontSize: '0.85rem' }}
+                    onClick={() => { const next = !showProductGallery; setShowProductGallery(next); if (next) loadBannerImages(); }}
+                  >
+                    {showProductGallery ? 'Hide gallery' : 'Browse uploads'}
+                  </button>
+                </div>
+                {showProductGallery && (
+                  <div style={{ display: 'flex', flexWrap: 'wrap', gap: '8px', maxHeight: '160px', overflowY: 'auto', padding: '8px', background: '#f9f9f9', borderRadius: '6px', border: '1px solid #eee' }}>
+                    {bannerImages.length === 0 ? (
+                      <span style={{ color: '#aaa', fontSize: '0.8rem' }}>No images uploaded yet.</span>
+                    ) : bannerImages.map(img => (
+                      <img key={img.name} src={img.url} alt={img.name} title={img.name}
+                        onClick={() => { setProductModal(prev => ({ ...prev, form: { ...prev.form, image_url: img.url } })); setShowProductGallery(false); }}
+                        style={{ height: '64px', width: '64px', objectFit: 'cover', borderRadius: '4px', cursor: 'pointer', border: productModal.form.image_url === img.url ? '2px solid #6B9E7A' : '2px solid transparent' }}
+                      />
+                    ))}
+                  </div>
+                )}
+              </div>
 
               {/* Category dropdown */}
               <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
@@ -2313,15 +3034,61 @@ Viktoria`;
                 />
               </div>
               {promoModal.form.type === 'section' && (
-                <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
-                  <label style={{ fontSize: '0.85rem', fontWeight: 600, color: '#444' }}>Photo URL (optional)</label>
-                  <input
-                    type="text"
-                    style={{ border: '1px solid #ddd', borderRadius: '6px', padding: '9px 12px', fontSize: '0.9rem', outline: 'none' }}
-                    placeholder="https://..."
-                    value={promoModal.form.image_url}
-                    onChange={e => setPromoModal(prev => ({ ...prev, form: { ...prev.form, image_url: e.target.value } }))}
-                  />
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                  <label style={{ fontSize: '0.85rem', fontWeight: 600, color: '#444' }}>Photo (optional)</label>
+
+                  {/* Preview of currently selected image */}
+                  {promoModal.form.image_url && (
+                    <div style={{ position: 'relative', borderRadius: '8px', overflow: 'hidden', background: '#f5f5f5', lineHeight: 0 }}>
+                      <img
+                        src={promoModal.form.image_url}
+                        alt="Banner preview"
+                        style={{ width: '100%', maxHeight: '160px', objectFit: 'cover', display: 'block' }}
+                      />
+                      <button
+                        onClick={() => setPromoModal(prev => ({ ...prev, form: { ...prev.form, image_url: '' } }))}
+                        style={{ position: 'absolute', top: '6px', right: '6px', background: 'rgba(0,0,0,0.55)', color: '#fff', border: 'none', borderRadius: '50%', width: '26px', height: '26px', cursor: 'pointer', fontSize: '16px', lineHeight: '26px', textAlign: 'center', padding: 0 }}
+                      >×</button>
+                    </div>
+                  )}
+
+                  {/* Upload + browse row */}
+                  <div style={{ display: 'flex', gap: '8px' }}>
+                    <label style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '6px', padding: '9px 12px', border: '1px dashed #6B9E7A', borderRadius: '6px', cursor: bannerUploading ? 'not-allowed' : 'pointer', fontSize: '0.85rem', color: '#6B9E7A', background: '#f0f7f2', opacity: bannerUploading ? 0.7 : 1 }}>
+                      {bannerUploading ? 'Uploading…' : '↑ Upload from computer'}
+                      <input
+                        type="file"
+                        accept="image/*"
+                        style={{ display: 'none' }}
+                        disabled={bannerUploading}
+                        onChange={e => { if (e.target.files[0]) uploadBannerImage(e.target.files[0]); e.target.value = ''; }}
+                      />
+                    </label>
+                    <button
+                      onClick={() => { const next = !showBannerGallery; setShowBannerGallery(next); if (next) loadBannerImages(); }}
+                      style={{ padding: '9px 12px', border: '1px solid #ddd', borderRadius: '6px', background: '#fff', fontSize: '0.85rem', cursor: 'pointer', color: '#555', whiteSpace: 'nowrap' }}
+                    >
+                      {showBannerGallery ? 'Hide gallery' : 'Browse uploads'}
+                    </button>
+                  </div>
+
+                  {/* Previously uploaded images gallery */}
+                  {showBannerGallery && (
+                    <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '6px', maxHeight: '210px', overflowY: 'auto', padding: '6px', border: '1px solid #eee', borderRadius: '8px', background: '#fafafa' }}>
+                      {bannerImages.length === 0 ? (
+                        <div style={{ gridColumn: '1/-1', textAlign: 'center', color: '#aaa', fontSize: '0.8rem', padding: '24px 0' }}>No images uploaded yet</div>
+                      ) : bannerImages.map(img => (
+                        <button
+                          key={img.name}
+                          onClick={() => { setPromoModal(prev => ({ ...prev, form: { ...prev.form, image_url: img.url } })); setShowBannerGallery(false); }}
+                          style={{ padding: 0, border: `2px solid ${promoModal.form.image_url === img.url ? '#6B9E7A' : 'transparent'}`, borderRadius: '6px', overflow: 'hidden', cursor: 'pointer', background: 'none', aspectRatio: '16/9', display: 'block' }}
+                          title={img.name}
+                        >
+                          <img src={img.url} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }} />
+                        </button>
+                      ))}
+                    </div>
+                  )}
                 </div>
               )}
               <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
@@ -2350,6 +3117,173 @@ Viktoria`;
                 {promoModal.editing ? '✓ Save Changes' : '+ Add Promotion'}
               </button>
               <button className="btn-modal-cancel" onClick={closePromoModal}>Cancel</button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* ==================== REBOOK MODAL ==================== */}
+      {rebookModal.isOpen && (
+        <div className="modal-overlay" onClick={closeRebookModal}>
+          <div className="modal-content" onClick={(e) => e.stopPropagation()} style={{ maxWidth: '520px' }}>
+            <div className="modal-header">
+              <h2>🔁 Create Rebook Booking</h2>
+              <button className="modal-close" onClick={closeRebookModal}>×</button>
+            </div>
+
+            <div className="modal-body">
+              {/* Client info strip */}
+              {rebookModal.sourceBooking && (
+                <div style={{ background: '#f0f4f1', borderRadius: '8px', padding: '12px', marginBottom: '16px', fontSize: '0.9rem', color: '#444' }}>
+                  <strong>{rebookModal.sourceBooking.name || selectedRebookClient?.name}</strong>
+                  {(rebookModal.sourceBooking.email || selectedRebookClient?.email) && (
+                    <> · <a href={`mailto:${rebookModal.sourceBooking.email || selectedRebookClient?.email}`}>{rebookModal.sourceBooking.email || selectedRebookClient?.email}</a></>
+                  )}
+                  {(rebookModal.sourceBooking.phone || selectedRebookClient?.phone) && (
+                    <> · <a href={`tel:${rebookModal.sourceBooking.phone || selectedRebookClient?.phone}`}>{rebookModal.sourceBooking.phone || selectedRebookClient?.phone}</a></>
+                  )}
+                </div>
+              )}
+
+              {/* Treatment selection */}
+              <div style={{ marginBottom: '16px' }}>
+                <label style={{ fontSize: '0.85rem', fontWeight: 600, color: '#444', display: 'block', marginBottom: '8px' }}>Treatments</label>
+                {Object.keys(rebookTreatments.grouped).length === 0 ? (
+                  <p style={{ fontSize: '0.85rem', color: '#888' }}>Loading treatments...</p>
+                ) : (
+                  Object.entries(rebookTreatments.grouped).map(([category, treatments]) => (
+                    <div key={category} style={{ marginBottom: '8px' }}>
+                      <p style={{ fontSize: '0.8rem', fontWeight: 600, color: '#888', marginBottom: '4px', textTransform: 'uppercase', letterSpacing: '0.05em' }}>{category}</p>
+                      {treatments.map(t => {
+                        const isSelected = rebookModal.form.selectedTreatments.some(s => s.id === t.id);
+                        return (
+                          <label key={t.id} style={{ display: 'flex', alignItems: 'center', gap: '8px', padding: '6px 0', cursor: 'pointer', fontSize: '0.9rem' }}>
+                            <input
+                              type="checkbox"
+                              checked={isSelected}
+                              onChange={() => {
+                                setRebookModal(prev => ({
+                                  ...prev,
+                                  form: {
+                                    ...prev.form,
+                                    selectedTreatments: isSelected
+                                      ? prev.form.selectedTreatments.filter(s => s.id !== t.id)
+                                      : [...prev.form.selectedTreatments, t]
+                                  }
+                                }));
+                              }}
+                            />
+                            <span>{t.name}</span>
+                            <span style={{ marginLeft: 'auto', color: '#888', fontSize: '0.85rem' }}>
+                              {t.duration_minutes ? `${t.duration_minutes} min` : ''}{t.price ? ` · ${t.price}` : ''}
+                            </span>
+                          </label>
+                        );
+                      })}
+                    </div>
+                  ))
+                )}
+              </div>
+
+              {/* Running totals bar */}
+              {(() => {
+                const selected = rebookModal.form.selectedTreatments;
+                const totalDur = selected.reduce((sum, t) => sum + (t.duration_minutes || 0), 0);
+                const totalPr = selected.reduce((sum, t) => {
+                  const n = parseFloat((t.price || '').toString().replace(/[^0-9.]/g, ''));
+                  return sum + (isNaN(n) ? 0 : n);
+                }, 0);
+                if (selected.length === 0) return null;
+                return (
+                  <div style={{ background: '#f0f4f1', borderRadius: '6px', padding: '10px 14px', marginBottom: '16px', display: 'flex', gap: '16px', fontSize: '0.9rem', color: '#2a4e3a', fontWeight: 600 }}>
+                    <span>⏱ {totalDur} min</span>
+                    <span>💰 {totalPr > 0 ? `$${totalPr.toFixed(0)}` : 'POA'}</span>
+                  </div>
+                );
+              })()}
+
+              {/* Date picker */}
+              <div style={{ marginBottom: '12px' }}>
+                <label style={{ fontSize: '0.85rem', fontWeight: 600, color: '#444', display: 'block', marginBottom: '4px' }}>Date *</label>
+                <input
+                  type="date"
+                  min={new Date().toISOString().split('T')[0]}
+                  value={rebookModal.form.date}
+                  onChange={e => {
+                    const val = e.target.value;
+                    const dur = rebookModal.form.selectedTreatments.reduce((sum, t) => sum + (t.duration_minutes || 0), 0);
+                    const autoTime = getNextAvailableTime(val, dur || 60);
+                    setRebookModal(prev => ({ ...prev, form: { ...prev.form, date: val, time: autoTime } }));
+                  }}
+                  style={{ width: '100%', border: '1px solid #ddd', borderRadius: '6px', padding: '8px 12px', fontSize: '0.9rem', boxSizing: 'border-box' }}
+                />
+              </div>
+
+              {/* Conflict warning */}
+              {rebookModal.form.date && rebookModal.form.time && (() => {
+                const dur = rebookModal.form.selectedTreatments.reduce((sum, t) => sum + (t.duration_minutes || 0), 0);
+                const conflicts = getConflictsForSlot(rebookModal.form.date, rebookModal.form.time, dur || 60);
+                if (conflicts.length === 0) return null;
+                return (
+                  <div style={{ background: '#fff9e6', border: '1px solid #f0c040', borderRadius: '6px', padding: '10px 14px', marginBottom: '12px', fontSize: '0.85rem', color: '#856404' }}>
+                    ⚠️ Conflict: {conflicts.map(c => c.name).join(', ')} {conflicts.length === 1 ? 'is' : 'are'} already booked at this time
+                  </div>
+                );
+              })()}
+
+              {/* Time dropdown */}
+              <div style={{ marginBottom: '12px' }}>
+                <label style={{ fontSize: '0.85rem', fontWeight: 600, color: '#444', display: 'block', marginBottom: '4px' }}>Time *</label>
+                <select
+                  value={rebookModal.form.time}
+                  onChange={e => setRebookModal(prev => ({ ...prev, form: { ...prev.form, time: e.target.value } }))}
+                  style={{ width: '100%', border: '1px solid #ddd', borderRadius: '6px', padding: '8px 12px', fontSize: '0.9rem', boxSizing: 'border-box' }}
+                >
+                  <option value="">-- Select a time --</option>
+                  {generateTimeOptions('08:00', '19:00').map(t => (
+                    <option key={t} value={t}>{formatTime(t)}</option>
+                  ))}
+                </select>
+              </div>
+
+              {/* Client type */}
+              <div style={{ marginBottom: '12px' }}>
+                <label style={{ fontSize: '0.85rem', fontWeight: 600, color: '#444', display: 'block', marginBottom: '4px' }}>Client Type</label>
+                <div style={{ display: 'flex', gap: '8px' }}>
+                  {['returning', 'new'].map(ct => (
+                    <button
+                      key={ct}
+                      onClick={() => setRebookModal(prev => ({ ...prev, form: { ...prev.form, clientType: ct } }))}
+                      style={{ flex: 1, padding: '8px', border: `1px solid ${rebookModal.form.clientType === ct ? '#6B9E7A' : '#ddd'}`, borderRadius: '6px', background: rebookModal.form.clientType === ct ? '#f0f4f1' : '#fff', color: rebookModal.form.clientType === ct ? '#2a4e3a' : '#666', fontWeight: rebookModal.form.clientType === ct ? 600 : 400, cursor: 'pointer', fontSize: '0.9rem' }}
+                    >
+                      {ct === 'returning' ? '🔁 Returning' : '⭐ New'}
+                    </button>
+                  ))}
+                </div>
+              </div>
+
+              {/* Notes */}
+              <div style={{ marginBottom: '8px' }}>
+                <label style={{ fontSize: '0.85rem', fontWeight: 600, color: '#444', display: 'block', marginBottom: '4px' }}>Notes</label>
+                <textarea
+                  value={rebookModal.form.notes}
+                  onChange={e => setRebookModal(prev => ({ ...prev, form: { ...prev.form, notes: e.target.value } }))}
+                  rows="3"
+                  className="reschedule-textarea"
+                  placeholder="Any notes for this appointment..."
+                />
+              </div>
+            </div>
+
+            <div className="modal-actions">
+              <button
+                className="btn-modal-approve"
+                onClick={handleRebookSubmit}
+                disabled={rebookSubmitting}
+              >
+                {rebookSubmitting ? 'Creating...' : '✓ Create & Confirm Booking'}
+              </button>
+              <button className="btn-modal-cancel" onClick={closeRebookModal}>Cancel</button>
             </div>
           </div>
         </div>

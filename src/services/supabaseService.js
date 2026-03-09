@@ -349,6 +349,12 @@ const supabaseService = {
     return data;
   },
 
+  async deleteShopOrder(id) {
+    await supabase.from('shop_order_items').delete().eq('order_id', id);
+    const { error } = await supabase.from('shop_orders').delete().eq('id', id);
+    if (error) throw new Error(error.message);
+  },
+
   // ==================== GIFT VOUCHERS ====================
 
   async createGiftVoucher({ purchaser_name, purchaser_email, purchaser_phone, recipient_name, amount, delivery_method, pickup_date, notes }) {
@@ -432,6 +438,47 @@ const supabaseService = {
       .delete()
       .eq('id', id);
     if (error) throw new Error(error.message);
+  },
+
+  // ==================== ADMIN REBOOK ====================
+
+  async searchClientHistory(searchTerm) {
+    const { data, error } = await supabase
+      .from('bookings')
+      .select(`*, booking_treatments(id, treatment_name, duration_minutes, price)`)
+      .or(`name.ilike.%${searchTerm}%,email.ilike.%${searchTerm}%`)
+      .order('date', { ascending: false });
+    if (error) throw new Error(error.message);
+    const clientMap = {};
+    (data || []).forEach(booking => {
+      const key = (booking.email || booking.name || 'unknown').toLowerCase();
+      if (!clientMap[key]) clientMap[key] = { name: booking.name, email: booking.email, phone: booking.phone, bookings: [] };
+      clientMap[key].bookings.push(booking);
+    });
+    return Object.values(clientMap);
+  },
+
+  async createAdminBooking({ name, email, phone, date, time, notes, treatments, clientType, totalDuration, totalPrice, sourceBookingId }) {
+    const bookingId = crypto.randomUUID();
+    const { error: bookingError } = await supabase.from('bookings').insert({
+      id: bookingId, name, email, phone, date, time,
+      time_range_start: null, time_range_end: null,
+      notes: notes || null, appointment_type: clientType || 'returning',
+      reminder_preference: 'email', total_duration: totalDuration || null,
+      total_price: totalPrice || 'POA', status: 'approved',
+      client_type: clientType || 'returning', marketing_consent: false,
+      source_booking_id: sourceBookingId || null,
+      booking_source: 'admin_rebook'
+    });
+    if (bookingError) throw new Error(bookingError.message);
+    const rows = treatments.map(t => ({
+      booking_id: bookingId, treatment_id: t.id || null,
+      treatment_name: t.treatment_name || t.name,
+      duration_minutes: t.duration_minutes, price: t.price
+    }));
+    const { error: treatmentsError } = await supabase.from('booking_treatments').insert(rows);
+    if (treatmentsError) throw new Error(treatmentsError.message);
+    return { id: bookingId };
   },
 
   // ==================== REALTIME ====================
