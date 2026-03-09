@@ -262,6 +262,7 @@ const AdminDashboard = ({ onLogout }) => {
         .catch(err => console.error('Error loading vouchers:', err))
         .finally(() => setVouchersLoading(false));
     }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [tab, loadShopData, loadPromosData, loadStockData, loadEmailData, loadStatsData, emailBlast.audience, statsMonth]);
 
   useEffect(() => {
@@ -636,7 +637,6 @@ const AdminDashboard = ({ onLogout }) => {
 
   const openRescheduleModal = (booking) => {
     const treatments = booking.booking_treatments || [];
-    const treatmentNames = treatments.map(bt => bt.treatment_name).join(', ') || 'your requested treatments';
     
     // Pre-fill with a template message
     const defaultMessage = `Hi ${booking.name}! Unfortunately I'm not available on ${formatDate(booking.date)} between ${formatTimeRange(booking.time_range_start, booking.time_range_end)}. 
@@ -712,7 +712,6 @@ Viktoria`;
 
   const openDeclineModal = (booking) => {
     const treatments = booking.booking_treatments || [];
-    const treatmentNames = treatments.map(bt => bt.treatment_name).join(', ') || 'your requested treatments';
     
     const defaultMessage = `I apologise, but I'm unable to accommodate your requested appointment time. If you'd like to book for a different date, please feel free to submit a new request.`;
     
@@ -1431,6 +1430,7 @@ Viktoria`;
               }).sort((a, b) => a.date < b.date ? -1 : 1);
 
               const newClients = monthApproved.filter(b => b.client_type === 'new').length;
+              // eslint-disable-next-line no-unused-vars
               const returningClients = monthApproved.filter(b => b.client_type === 'returning').length;
               const today = new Date().toISOString().split('T')[0];
               const upcoming = monthApproved.filter(b => b.date >= today).length;
