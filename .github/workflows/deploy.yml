@@ -30,12 +30,14 @@ jobs:
       - name: Build
         run: npm run build
 
-      - name: Deploy to Hostinger via FTP
+      - name: Deploy to Hostinger via FTPS
         uses: SamKirkland/FTP-Deploy-Action@v4.3.5
         with:
           server: beautybyviktoria.com
           username: u512427609
           password: ${{ secrets.FTP_PASSWORD }}
+          protocol: ftps
+          port: 21
           local-dir: ./build/
           server-dir: domains/beautybyviktoria.com/public_html/
           state-name: .ftp-deploy-sync-state.json
