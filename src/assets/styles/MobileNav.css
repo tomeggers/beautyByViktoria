@@ -115,6 +115,6 @@
   }
 
   .has-promo .mobile-nav {
-    top: 222px; /* 56px banner + 170px header - 4px overlap */
+    top: 230px; /* 56px banner + 8px gap + 170px header - 4px overlap */
   }
 }

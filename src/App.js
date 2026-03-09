@@ -39,6 +39,21 @@ function AppContent() {
     return () => subscription.unsubscribe();
   }, []);
 
+  // Toggle class on html+body so home.css margin-top doesn't apply on admin
+  useEffect(() => {
+    if (isAdminPage) {
+      document.documentElement.classList.add('admin-page');
+      document.body.classList.add('admin-page');
+    } else {
+      document.documentElement.classList.remove('admin-page');
+      document.body.classList.remove('admin-page');
+    }
+    return () => {
+      document.documentElement.classList.remove('admin-page');
+      document.body.classList.remove('admin-page');
+    };
+  }, [isAdminPage]);
+
   const handleAdminLogin = (newSession) => {
     setSession(newSession);
   };
@@ -54,7 +69,7 @@ function AppContent() {
       {!isAdminPage && <PromoBanner />}
       {!isAdminPage && <LogoHeader />}
       {!isAdminPage && <MobileNav />}
-      <main className="app-main">
+      <main className={`app-main${isAdminPage ? ' app-main--admin' : ''}`}>
         <Routes>
           <Route path="/" element={<Home />} />
           <Route path="/gallery" element={<Gallery />} />

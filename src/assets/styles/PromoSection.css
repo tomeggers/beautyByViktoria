@@ -1,7 +1,7 @@
 .promo-section {
   background: var(--promo-color, #2a4e3a);
   border-radius: 16px;
-  margin: 0 auto 32px;
+  margin: 2rem auto 32px;
   overflow: hidden;
   max-width: 900px;
 }
@@ -60,7 +60,7 @@
 @media (max-width: 600px) {
   .promo-section {
     border-radius: 12px;
-    margin: 0 0 24px;
+    margin: 1.5rem 0 24px;
   }
 
   .promo-section-inner {

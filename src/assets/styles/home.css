@@ -27,7 +27,7 @@ main {
 /* ── Modern Hero Section ── */
 .modern-hero {
   background: linear-gradient(160deg, #f7faf8 0%, #eef5f1 60%, #fdfcfb 100%);
-  padding: 6rem 2rem 7rem;
+  padding: 3rem 2rem 5rem;
   position: relative;
   overflow: hidden;
 }

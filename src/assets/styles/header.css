@@ -75,14 +75,14 @@
   }
 }
 
-/* ── Promo banner active: shift header down by banner height ── */
-/* Mobile: 44px banner */
+/* ── Promo banner active: shift header down by banner height + 8px gap ── */
+/* Mobile: 44px banner + 8px gap */
 .has-promo .header {
-  top: 44px;
+  top: 52px;
 }
-/* Desktop: 56px banner */
+/* Desktop: 56px banner + 8px gap */
 @media (min-width: 768px) {
   .has-promo .header {
-    top: 56px;
+    top: 64px;
   }
 }
