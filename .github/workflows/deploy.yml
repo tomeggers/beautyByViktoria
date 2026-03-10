@@ -31,14 +31,48 @@ jobs:
         run: npm run build
 
       - name: Deploy to Hostinger via SFTP
-        uses: pressidium/sftp-deploy-action@v1
-        with:
-          host: beautybyviktoria.com
-          port: 65002
-          username: u512427609
-          password: ${{ secrets.FTP_PASSWORD }}
-          localDir: ./build
-          remoteDir: /domains/beautybyviktoria.com/public_html
+        env:
+          FTP_PASSWORD: ${{ secrets.FTP_PASSWORD }}
+        run: |
+          pip install paramiko --quiet
+          python3 << 'PYEOF'
+          import paramiko, os, sys
+          from pathlib import Path
+
+          host = 'beautybyviktoria.com'
+          port = 65002
+          username = 'u512427609'
+          password = os.environ['FTP_PASSWORD']
+          remote_base = '/domains/beautybyviktoria.com/public_html'
+          local_base = './build'
+
+          ssh = paramiko.SSHClient()
+          ssh.set_missing_host_key_policy(paramiko.AutoAddPolicy())
+          print(f'Connecting to {host}:{port}...')
+          ssh.connect(host, port=port, username=username, password=password)
+          print('Connected. Opening SFTP...')
+
+          sftp = ssh.open_sftp()
+          print('SFTP session open. Uploading files...')
+
+          def upload_dir(local_dir, remote_dir):
+              for item in Path(local_dir).iterdir():
+                  remote_item = remote_dir + '/' + item.name
+                  if item.is_dir():
+                      try:
+                          sftp.mkdir(remote_item)
+                      except OSError:
+                          pass
+                      upload_dir(str(item), remote_item)
+                  else:
+                      print(f'  {item.name}')
+                      sftp.put(str(item), remote_item)
+
+          upload_dir(local_base, remote_base)
+          sftp.close()
+          ssh.close()
+          print('Deploy complete!')
+          PYEOF
 
       - name: Deploy Supabase Edge Functions
         env:
