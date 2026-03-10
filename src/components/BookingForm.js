@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { Link } from 'react-router-dom';
 import supabaseService from '../services/supabaseService';
 import '../assets/styles/booking_form.css';
@@ -22,6 +22,8 @@ const BookingForm = () => {
   const [error, setError] = useState('');
   const [expandedCategories, setExpandedCategories] = useState({});
   const [marketingConsent, setMarketingConsent] = useState(false);
+
+  const submittingRef = useRef(false);
 
   // Rebooking state
   const [rebookingId, setRebookingId] = useState(null);
@@ -178,6 +180,8 @@ const BookingForm = () => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    if (submittingRef.current) return;
+    submittingRef.current = true;
     setError('');
 
     if (selectedTreatments.length === 0) {
@@ -257,6 +261,7 @@ const BookingForm = () => {
       );
     } finally {
       setLoading(false);
+      submittingRef.current = false;
     }
   };
 
