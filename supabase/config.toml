@@ -1,0 +1,8 @@
+[functions.booking-notification]
+verify_jwt = false
+
+[functions.appointment-reminder]
+verify_jwt = false
+
+[functions.email-blast]
+verify_jwt = false
