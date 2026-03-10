@@ -849,11 +849,12 @@ Viktoria`;
       const treatments = booking.booking_treatments || [];
       const treatmentNames = treatments.map(bt => bt.treatment_name).join(', ') || 'Appointment';
 
-      supabaseService.sendNotification('declined', {
+      await supabaseService.sendNotification('cancelled', {
         name: booking.name,
         email: booking.email,
         date: booking.date,
         treatmentNames,
+        calendar_event_id: booking.calendar_event_id,
       });
 
       setBookings(prev => prev.map(b =>
@@ -983,7 +984,7 @@ Viktoria`;
       });
 
       const treatmentNames = form.selectedTreatments.map(t => t.name || t.treatment_name).join(', ') || 'Appointment';
-      const result = await supabaseService.sendNotification('approved', {
+      const result = await supabaseService.sendNotification('rebook_confirmed', {
         name, email, phone,
         date: form.date,
         time: form.time,

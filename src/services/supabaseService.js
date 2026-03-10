@@ -192,26 +192,18 @@ const supabaseService = {
 
   async sendNotification(action, bookingData) {
     try {
-      const url = `${process.env.REACT_APP_SUPABASE_URL}/functions/v1/booking-notification`;
-      console.log('Calling Edge Function:', url);
+      console.log('Calling Edge Function: booking-notification, action:', action);
 
-      const response = await fetch(url, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${process.env.REACT_APP_SUPABASE_ANON_KEY}`,
-        },
-        body: JSON.stringify({ action, booking: bookingData }),
+      const { data, error } = await supabase.functions.invoke('booking-notification', {
+        body: { action, booking: bookingData },
       });
 
-      const data = await response.json();
-      console.log('Edge Function response:', response.status, data);
-
-      if (!response.ok) {
-        console.error('Edge Function error:', data);
+      if (error) {
+        console.error('Edge Function error:', error);
         return null;
       }
 
+      console.log('Edge Function response:', data);
       return data;
     } catch (err) {
       console.error('Failed to send notification:', err);
