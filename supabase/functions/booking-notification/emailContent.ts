@@ -134,7 +134,7 @@ export function rescheduleEmail(booking: any): { subject: string; html: string }
     : "https://beautybyviktoria.com/book";
 
   return {
-    subject: "A note about your booking \u2014 Beauty by Viktoria",
+    subject: "Rebooking Request — Beauty by Viktoria",
     html: emailWrapper(`
       ${h2(`Hi ${booking.name},`)}
       ${p("Thank you for your booking request. Unfortunately, we need to suggest a different time.")}

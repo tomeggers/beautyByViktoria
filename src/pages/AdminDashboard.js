@@ -1613,7 +1613,7 @@ Viktoria`;
                               <span className="info-value">{lastBooking?.date ? formatDate(lastBooking.date) : 'Unknown'}</span>
                             </div>
                             <div className="info-row">
-                              <span className="info-label">Last treatment:</span>
+                              <span className="info-label">Last treatment: </span>
                               <span className="info-value treatment">{lastTreatments}</span>
                             </div>
                           </div>
@@ -3198,6 +3198,16 @@ Viktoria`;
                   </div>
                 );
               })()}
+
+              {/* Calendar */}
+              <div style={{ marginBottom: '16px' }}>
+                <label style={{ fontSize: '0.85rem', fontWeight: 600, color: '#444', display: 'block', marginBottom: '6px' }}>Availability</label>
+                <iframe
+                  src={calendarEmbedUrl}
+                  style={{ width: '100%', height: '300px', border: '1px solid #ddd', borderRadius: '6px' }}
+                  title="Availability Calendar"
+                />
+              </div>
 
               {/* Date picker */}
               <div style={{ marginBottom: '12px' }}>
