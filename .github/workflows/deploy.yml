@@ -15,8 +15,8 @@ jobs:
       - name: Set up Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: '20'
-          cache: 'npm'
+          node-version: "20"
+          cache: "npm"
 
       - name: Install dependencies
         run: npm ci
@@ -30,16 +30,16 @@ jobs:
       - name: Build
         run: npm run build
 
-      - name: Deploy to Hostinger via SFTP
-        uses: wlixcc/SFTP-Deploy-Action@v1.2.4
+      - name: Deploy to Hostinger
+        uses: SamKirkland/FTP-Deploy-Action@v4.3.4
         with:
           server: beautybyviktoria.com
-          port: 65002
           username: u512427609
           password: ${{ secrets.FTP_PASSWORD }}
-          local_path: ./build/*
-          remote_path: /domains/beautybyviktoria.com/public_html
-          sftp_only: true
+          protocol: ftp
+          port: 21
+          local-dir: build/
+          server-dir: public_html/
 
       - name: Deploy Supabase Edge Functions
         env:
