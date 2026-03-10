@@ -34,14 +34,18 @@ jobs:
 
       - name: Push build to deploy branch
         run: |
-          cd build
-          git init
-          git config user.name "github-actions"
-          git config user.email "github-actions@github.com"
-          git remote add origin https://x-access-token:${{ secrets.GITHUB_TOKEN }}@github.com/tomeggers/beautyByViktoria.git
-          git fetch origin deploy 2>/dev/null && git checkout -b deploy origin/deploy || git checkout -b deploy
+          git config --global user.name "github-actions"
+          git config --global user.email "github-actions@github.com"
+          REPO="https://x-access-token:${{ secrets.GITHUB_TOKEN }}@github.com/tomeggers/beautyByViktoria.git"
+          if git clone --depth 1 --branch deploy "$REPO" /tmp/deploy 2>/dev/null; then
+            rm -rf /tmp/deploy/*
+          else
+            mkdir -p /tmp/deploy && cd /tmp/deploy && git init -b deploy && git remote add origin "$REPO"
+          fi
+          cp -r build/. /tmp/deploy/
+          cd /tmp/deploy
           git add -A
-          git commit -m "deploy: ${{ github.sha }}" --allow-empty
+          git diff --cached --quiet || git commit -m "deploy: ${{ github.sha }}"
           git push origin deploy
 
       - name: Trigger Hostinger deployment
