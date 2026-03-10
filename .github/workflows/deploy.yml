@@ -30,20 +30,13 @@ jobs:
       - name: Build
         run: npm run build
 
-      - name: Deploy to Hostinger via FTPS
-        uses: SamKirkland/FTP-Deploy-Action@v4.3.5
-        with:
-          server: beautybyviktoria.com
-          username: u512427609
-          password: ${{ secrets.FTP_PASSWORD }}
-          protocol: ftps
-          port: 21
-          local-dir: ./build/
-          server-dir: domains/beautybyviktoria.com/public_html/
-          state-name: .ftp-deploy-sync-state.json
-          exclude: |
-            **/.git*
-            **/.git*/**
+      - name: Deploy to Hostinger via SSH/rsync
+        run: |
+          sudo apt-get install -y sshpass rsync
+          sshpass -p "${{ secrets.FTP_PASSWORD }}" rsync -avz --delete \
+            -e "ssh -o StrictHostKeyChecking=no -p 22" \
+            ./build/ \
+            u512427609@beautybyviktoria.com:domains/beautybyviktoria.com/public_html/
 
       - name: Deploy Supabase Edge Functions
         env:
