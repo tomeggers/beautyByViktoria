@@ -39,10 +39,10 @@ jobs:
           git config user.name "github-actions"
           git config user.email "github-actions@github.com"
           git remote add origin https://x-access-token:${{ secrets.GITHUB_TOKEN }}@github.com/tomeggers/beautyByViktoria.git
-          git checkout -b deploy
+          git fetch origin deploy 2>/dev/null && git checkout -b deploy origin/deploy || git checkout -b deploy
           git add -A
-          git commit -m "deploy: ${{ github.sha }}"
-          git push --force origin deploy
+          git commit -m "deploy: ${{ github.sha }}" --allow-empty
+          git push origin deploy
 
       - name: Trigger Hostinger deployment
         run: curl -X POST "${{ secrets.HOSTINGER_DEPLOY }}"
