@@ -34,7 +34,7 @@ jobs:
         run: |
           sudo apt-get install -y sshpass rsync
           sshpass -p "${{ secrets.FTP_PASSWORD }}" rsync -avz --delete \
-            -e "ssh -o StrictHostKeyChecking=no -p 22" \
+            -e "ssh -o StrictHostKeyChecking=no -p 65002" \
             ./build/ \
             u512427609@beautybyviktoria.com:domains/beautybyviktoria.com/public_html/
 
