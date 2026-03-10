@@ -31,11 +31,15 @@ jobs:
         run: npm run build
 
       - name: Deploy to Hostinger via SFTP
-        env:
-          FTP_PASSWORD: ${{ secrets.FTP_PASSWORD }}
-        run: |
-          sudo apt-get install -y sshpass lftp
-          lftp -c "set sftp:connect-program 'sshpass -p $FTP_PASSWORD ssh -o StrictHostKeyChecking=no -p 65002'; open sftp://u512427609@beautybyviktoria.com; mirror --reverse --delete ./build/ domains/beautybyviktoria.com/public_html/; bye"
+        uses: wlixcc/SFTP-Deploy-Action@v1.2.4
+        with:
+          server: beautybyviktoria.com
+          port: 65002
+          username: u512427609
+          password: ${{ secrets.FTP_PASSWORD }}
+          local_path: ./build/*
+          remote_path: /domains/beautybyviktoria.com/public_html
+          sftp_only: true
 
       - name: Deploy Supabase Edge Functions
         env:
