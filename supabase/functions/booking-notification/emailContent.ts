@@ -5,6 +5,7 @@ import {
   detailBox,
   highlightBox,
   messageBox,
+  statusBanner,
   h2,
   p,
 } from "./emailTemplates.ts";
@@ -24,12 +25,13 @@ export function bookingReceiptEmail(booking: any): { subject: string; html: stri
   }
 
   return {
-    subject: "We've received your booking request!",
+    subject: "Booking Request Received \u2014 We'll confirm shortly!",
     html: emailWrapper(`
+      ${statusBanner("Pending Confirmation", "#7a5c00", "#fff8e1")}
       ${h2(`Thanks for your booking request, ${booking.name}!`)}
-      ${p("We've received your request and will confirm your appointment soon.")}
+      ${p("We've received your request and will be in touch shortly to confirm your appointment time.")}
       ${detailBox(rows)}
-      ${p("We'll be in touch shortly to confirm your appointment time. If you need to make any changes, please get in touch.")}
+      ${p("Please note this is a <strong>request only</strong> \u2014 your appointment is not yet confirmed. You'll receive a separate confirmation email once we've reviewed your request.")}
     `),
   };
 }
@@ -85,10 +87,11 @@ export function approvalEmailNewClient(booking: any): { subject: string; html: s
   }
 
   return {
-    subject: "Welcome to Beauty by Viktoria \u2014 Your appointment is confirmed!",
+    subject: "Appointment Confirmed \u2014 Welcome to Beauty by Viktoria!",
     html: emailWrapper(`
+      ${statusBanner("Appointment Confirmed \u2713", "#1a4731", "#e6f4ed")}
       ${h2(`Welcome, ${booking.name}!`)}
-      ${p("We're so excited to have you as a new client at Beauty by Viktoria! Your appointment has been confirmed.")}
+      ${p("We're so excited to have you as a new client at Beauty by Viktoria! Your appointment is now confirmed.")}
       ${highlightBox(`${formatDate(booking.date)} at ${formatTime(booking.time)}`)}
       ${detailBox(rows)}
       ${p("<strong>A few things to know before your first visit:</strong>")}
@@ -112,10 +115,11 @@ export function approvalEmailReturningClient(booking: any): { subject: string; h
   }
 
   return {
-    subject: "Your appointment is confirmed \u2014 Beauty by Viktoria",
+    subject: "Appointment Confirmed \u2014 Beauty by Viktoria",
     html: emailWrapper(`
+      ${statusBanner("Appointment Confirmed \u2713", "#1a4731", "#e6f4ed")}
       ${h2(`Hi ${booking.name}!`)}
-      ${p("Great news \u2014 your appointment has been confirmed. We look forward to seeing you again!")}
+      ${p("Great news \u2014 your appointment is now confirmed. We look forward to seeing you again!")}
       ${highlightBox(`${formatDate(booking.date)} at ${formatTime(booking.time)}`)}
       ${detailBox(rows)}
       ${p("As a reminder, if you need to cancel or reschedule, please let us know at least 24 hours in advance.")}
@@ -217,6 +221,140 @@ export function orderResponseEmail(order: any): { subject: string; html: string 
       ${p('Thank you for your order! Here is a message from Viktoria:')}
       ${messageBox(order.responseMessage || '')}
       ${p('If you have any questions, feel free to get in touch.')}
+    `),
+  };
+}
+
+// ==================== GIFT VOUCHER EMAILS ====================
+
+export function voucherSubmittedEmail(voucher: any): { subject: string; html: string } {
+  let rows = detailRow('Amount:', `$${voucher.amount}`);
+  rows += detailRow('Delivery:', voucher.delivery_method === 'pickup' ? 'Pick up in person' : 'Email');
+  if (voucher.delivery_method === 'pickup' && voucher.pickup_date) {
+    rows += detailRow('Preferred pickup date:', voucher.pickup_date);
+  }
+  if (voucher.recipient_name) {
+    rows += detailRow('For:', voucher.recipient_name);
+  }
+  if (voucher.notes) {
+    rows += detailRow('Notes:', voucher.notes);
+  }
+
+  return {
+    subject: "We've received your gift voucher request — Beauty by Viktoria",
+    html: emailWrapper(`
+      ${h2(`Thank you, ${voucher.purchaser_name}!`)}
+      ${p(`We've received your gift voucher request for <strong>$${voucher.amount}</strong>. We'll notify you as soon as it's ready.`)}
+      ${detailBox(rows)}
+      ${p("If you have any questions, feel free to get in touch.")}
+    `),
+  };
+}
+
+export function voucherAdminEmail(voucher: any): { subject: string; html: string } {
+  let rows = detailRow('Purchaser:', voucher.purchaser_name);
+  rows += detailRow('Email:', voucher.purchaser_email);
+  rows += detailRow('Phone:', voucher.purchaser_phone);
+  rows += detailRow('Amount:', `$${voucher.amount}`);
+  rows += detailRow('Delivery:', voucher.delivery_method === 'pickup' ? 'Pick up in person' : 'Email');
+  if (voucher.delivery_method === 'pickup' && voucher.pickup_date) {
+    rows += detailRow('Preferred pickup date:', voucher.pickup_date);
+  }
+  if (voucher.recipient_name) {
+    rows += detailRow('For:', voucher.recipient_name);
+  }
+  if (voucher.notes) {
+    rows += detailRow('Notes:', voucher.notes);
+  }
+
+  return {
+    subject: `New gift voucher request from ${voucher.purchaser_name}`,
+    html: emailWrapper(`
+      ${h2('New Gift Voucher Request')}
+      ${detailBox(rows)}
+      <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="margin:20px 0;">
+        <tr>
+          <td align="center">
+            <a href="https://beautybyviktoria.com/admin" style="display:inline-block;background:#6B9E7A;color:white;padding:14px 32px;border-radius:8px;text-decoration:none;font-size:16px;font-weight:600;">View in Admin Dashboard</a>
+          </td>
+        </tr>
+      </table>
+    `),
+  };
+}
+
+export function voucherReadyEmail(voucher: any): { subject: string; html: string } {
+  const deliveryInfo = voucher.delivery_method === 'pickup'
+    ? `Your voucher is ready for pickup${voucher.pickup_date ? ` from ${voucher.pickup_date}` : ''}. Please get in touch to arrange collection.`
+    : `Your voucher will be emailed to you shortly.`;
+
+  let rows = detailRow('Amount:', `$${voucher.amount}`);
+  if (voucher.recipient_name) {
+    rows += detailRow('For:', voucher.recipient_name);
+  }
+
+  return {
+    subject: "Your gift voucher is ready — Beauty by Viktoria",
+    html: emailWrapper(`
+      ${h2(`Great news, ${voucher.purchaser_name}!`)}
+      ${p("Your gift voucher is ready.")}
+      ${detailBox(rows)}
+      ${p(deliveryInfo)}
+      ${p("Thank you for supporting Beauty by Viktoria!")}
+    `),
+  };
+}
+
+export function rebookConfirmationEmail(booking: any): { subject: string; html: string } {
+  const treatments = booking.treatmentNames || "your selected treatments";
+  const location = getLocation(booking.date);
+
+  let rows = detailRow("Treatments:", treatments);
+  rows += detailRow("Location:", location);
+  if (booking.total_duration) {
+    rows += detailRow("Duration:", `Approx. ${booking.total_duration} minutes`);
+  }
+  if (booking.total_price) {
+    rows += detailRow("Price:", booking.total_price);
+  }
+  if (booking.notes) {
+    rows += detailRow("Notes:", booking.notes);
+  }
+
+  return {
+    subject: "Your next appointment is booked \u2014 Beauty by Viktoria",
+    html: emailWrapper(`
+      ${statusBanner("Appointment Confirmed \u2713", "#1a4731", "#e6f4ed")}
+      ${h2(`Hi ${booking.name}, you're all booked in!`)}
+      ${p("Viktoria has booked your next appointment. We look forward to seeing you again!")}
+      ${highlightBox(`${formatDate(booking.date)} at ${formatTime(booking.time)}`)}
+      ${detailBox(rows)}
+      ${p("If you need to cancel or reschedule, please let us know at least 24 hours in advance.")}
+      ${p("See you soon!")}
+    `),
+  };
+}
+
+export function appointmentReminderEmail(booking: any): { subject: string; html: string } {
+  const treatments = booking.treatmentNames || "your appointment";
+  const location = getLocation(booking.date);
+
+  let rows = detailRow("Treatments:", treatments);
+  rows += detailRow("Location:", location);
+  if (booking.total_duration) {
+    rows += detailRow("Duration:", `Approx. ${booking.total_duration} minutes`);
+  }
+
+  return {
+    subject: "Reminder: Your appointment is today! \u2014 Beauty by Viktoria",
+    html: emailWrapper(`
+      ${statusBanner("Appointment Today", "#1a4731", "#e6f4ed")}
+      ${h2(`Hi ${booking.name}, see you today!`)}
+      ${p("This is a friendly reminder that you have an appointment with Beauty by Viktoria today.")}
+      ${highlightBox(`Today at ${formatTime(booking.time)}`)}
+      ${detailBox(rows)}
+      ${p("If you need to reschedule or can no longer make it, please get in touch as soon as possible.")}
+      ${p("We look forward to seeing you!")}
     `),
   };
 }

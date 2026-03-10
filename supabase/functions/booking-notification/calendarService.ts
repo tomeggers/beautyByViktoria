@@ -1,27 +1,101 @@
 async function getGoogleAccessToken(): Promise<string | null> {
-  const clientId = Deno.env.get("GOOGLE_CLIENT_ID");
-  const clientSecret = Deno.env.get("GOOGLE_CLIENT_SECRET");
-  const refreshToken = Deno.env.get("GOOGLE_REFRESH_TOKEN");
+  const serviceAccountJson = Deno.env.get("GOOGLE_SERVICE_ACCOUNT_JSON");
 
-  if (!clientId || !clientSecret || !refreshToken) {
-    console.error("Google OAuth credentials not set — skipping calendar");
+  if (!serviceAccountJson) {
+    console.error("GOOGLE_SERVICE_ACCOUNT_JSON not set — skipping calendar");
     return null;
   }
 
-  const tokenRes = await fetch("https://oauth2.googleapis.com/token", {
-    method: "POST",
-    headers: { "Content-Type": "application/x-www-form-urlencoded" },
-    body: new URLSearchParams({
-      client_id: clientId,
-      client_secret: clientSecret,
-      refresh_token: refreshToken,
-      grant_type: "refresh_token",
-    }),
-  });
+  let serviceAccount: { client_email: string; private_key: string };
+  try {
+    serviceAccount = JSON.parse(serviceAccountJson);
+  } catch (err) {
+    console.error("Failed to parse GOOGLE_SERVICE_ACCOUNT_JSON:", err);
+    console.error("JSON length:", serviceAccountJson.length);
+    console.error("JSON start:", serviceAccountJson.substring(0, 50));
+    return null;
+  }
+
+  console.log("Service account email:", serviceAccount.client_email);
+  console.log("Private key starts with:", serviceAccount.private_key?.substring(0, 40));
+
+  const { client_email, private_key } = serviceAccount;
+
+  const now = Math.floor(Date.now() / 1000);
+  const header = { alg: "RS256", typ: "JWT" };
+  const payload = {
+    iss: client_email,
+    scope: "https://www.googleapis.com/auth/calendar",
+    aud: "https://oauth2.googleapis.com/token",
+    exp: now + 3600,
+    iat: now,
+  };
+
+  const b64url = (str: string) =>
+    btoa(str).replace(/=/g, "").replace(/\+/g, "-").replace(/\//g, "_");
+
+  const encodedHeader = b64url(JSON.stringify(header));
+  const encodedPayload = b64url(JSON.stringify(payload));
+  const signingInput = `${encodedHeader}.${encodedPayload}`;
+
+  const pemContents = private_key
+    .replace("-----BEGIN PRIVATE KEY-----", "")
+    .replace("-----END PRIVATE KEY-----", "")
+    .replace(/\n/g, "");
+
+  const keyBuffer = Uint8Array.from(atob(pemContents), (c) => c.charCodeAt(0));
+
+  let cryptoKey: CryptoKey;
+  try {
+    cryptoKey = await crypto.subtle.importKey(
+      "pkcs8",
+      keyBuffer,
+      { name: "RSASSA-PKCS1-v1_5", hash: "SHA-256" },
+      false,
+      ["sign"]
+    );
+  } catch (err) {
+    console.error("Failed to import service account private key:", err);
+    console.error("PEM content length:", pemContents.length);
+    return null;
+  }
+
+  const signature = await crypto.subtle.sign(
+    "RSASSA-PKCS1-v1_5",
+    cryptoKey,
+    new TextEncoder().encode(signingInput)
+  );
+
+  const encodedSignature = b64url(
+    String.fromCharCode(...new Uint8Array(signature))
+  );
+
+  const jwt = `${signingInput}.${encodedSignature}`;
+
+  const tokenController = new AbortController();
+  const tokenTimeout = setTimeout(() => tokenController.abort(), 8000);
+
+  let tokenRes: Response;
+  try {
+    tokenRes = await fetch("https://oauth2.googleapis.com/token", {
+      method: "POST",
+      headers: { "Content-Type": "application/x-www-form-urlencoded" },
+      body: new URLSearchParams({
+        grant_type: "urn:ietf:params:oauth:grant-type:jwt-bearer",
+        assertion: jwt,
+      }),
+      signal: tokenController.signal,
+    });
+  } catch (err) {
+    clearTimeout(tokenTimeout);
+    console.error("Google OAuth token request failed (timeout or network error):", err);
+    return null;
+  }
+  clearTimeout(tokenTimeout);
 
   if (!tokenRes.ok) {
     const text = await tokenRes.text();
-    console.error("Google OAuth error:", text);
+    console.error("Google service account token error:", text);
     return null;
   }
 
@@ -30,14 +104,18 @@ async function getGoogleAccessToken(): Promise<string | null> {
 }
 
 async function deleteCalendarEvent(calendarId: string, eventId: string, accessToken: string): Promise<boolean> {
+  const delController = new AbortController();
+  const delTimeout = setTimeout(() => delController.abort(), 8000);
   try {
     const res = await fetch(
       `https://www.googleapis.com/calendar/v3/calendars/${encodeURIComponent(calendarId)}/events/${encodeURIComponent(eventId)}`,
       {
         method: "DELETE",
         headers: { Authorization: `Bearer ${accessToken}` },
+        signal: delController.signal,
       }
     );
+    clearTimeout(delTimeout);
     if (!res.ok) {
       const text = await res.text();
       console.error(`Failed to delete event ${eventId} from ${calendarId}: ${text}`);
@@ -46,26 +124,32 @@ async function deleteCalendarEvent(calendarId: string, eventId: string, accessTo
     console.log(`Deleted event ${eventId} from calendar ${calendarId}`);
     return true;
   } catch (err) {
+    clearTimeout(delTimeout);
     console.error(`Error deleting calendar event: ${err}`);
     return false;
   }
 }
 
-export async function deleteCalendarEvents(booking: any): Promise<void> {
-  if (!booking.calendar_event_id) return;
+export async function deleteCalendarEvents(booking: any): Promise<boolean> {
+  if (!booking.calendar_event_id) return true;
 
   const accessToken = await getGoogleAccessToken();
-  if (!accessToken) return;
+  if (!accessToken) return false;
 
   const privateCalId = Deno.env.get("GOOGLE_CALENDAR_ID");
   const publicCalId = Deno.env.get("GOOGLE_PUBLIC_CALENDAR_ID");
 
+  let success = true;
+
   if (privateCalId) {
-    await deleteCalendarEvent(privateCalId, booking.calendar_event_id, accessToken);
+    const ok = await deleteCalendarEvent(privateCalId, booking.calendar_event_id, accessToken);
+    if (!ok) success = false;
   }
   if (publicCalId) {
     await deleteCalendarEvent(publicCalId, booking.calendar_event_id, accessToken);
   }
+
+  return success;
 }
 
 export async function createCalendarEvent(booking: any): Promise<string | null> {
@@ -115,17 +199,29 @@ export async function createCalendarEvent(booking: any): Promise<string | null> 
 
   console.log(`Creating calendar event: ${privateEvent.summary} on ${booking.date} at ${booking.time}`);
 
-  const res = await fetch(
-    `https://www.googleapis.com/calendar/v3/calendars/${encodeURIComponent(privateCalId)}/events`,
-    {
-      method: "POST",
-      headers: {
-        Authorization: `Bearer ${accessToken}`,
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify(privateEvent),
-    }
-  );
+  const calController = new AbortController();
+  const calTimeout = setTimeout(() => calController.abort(), 8000);
+
+  let res: Response;
+  try {
+    res = await fetch(
+      `https://www.googleapis.com/calendar/v3/calendars/${encodeURIComponent(privateCalId)}/events`,
+      {
+        method: "POST",
+        headers: {
+          Authorization: `Bearer ${accessToken}`,
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(privateEvent),
+        signal: calController.signal,
+      }
+    );
+  } catch (err) {
+    clearTimeout(calTimeout);
+    console.error("Google Calendar create request failed (timeout or network error):", err);
+    return null;
+  }
+  clearTimeout(calTimeout);
 
   if (!res.ok) {
     const text = await res.text();

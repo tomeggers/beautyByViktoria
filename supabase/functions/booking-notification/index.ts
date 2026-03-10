@@ -11,6 +11,10 @@ import {
   orderConfirmationEmail,
   orderAdminEmail,
   orderResponseEmail,
+  voucherSubmittedEmail,
+  voucherAdminEmail,
+  voucherReadyEmail,
+  rebookConfirmationEmail,
 } from "./emailContent.ts";
 
 const corsHeaders = {
@@ -38,6 +42,7 @@ Deno.serve(async (req: Request) => {
 
     const adminEmail = Deno.env.get("ADMIN_EMAIL");
     let calendarEventId: string | null = null;
+    let calendarDeleted: boolean | null = null;
     const emailResults: any[] = [];
 
     switch (action) {
@@ -79,7 +84,12 @@ Deno.serve(async (req: Request) => {
         const decline = declineEmail(booking);
         const r1 = await sendEmail(booking.email, decline.subject, decline.html);
         emailResults.push({ to: booking.email, type: "decline", ...r1 });
-        await deleteCalendarEvents(booking);
+        calendarDeleted = await deleteCalendarEvents(booking);
+        break;
+      }
+
+      case "declined_no_email": {
+        calendarDeleted = await deleteCalendarEvents(booking);
         break;
       }
 
@@ -111,6 +121,33 @@ Deno.serve(async (req: Request) => {
         break;
       }
 
+      case "voucher_submitted": {
+        const confirmation = voucherSubmittedEmail(booking);
+        const r1 = await sendEmail(booking.purchaser_email, confirmation.subject, confirmation.html);
+        emailResults.push({ to: booking.purchaser_email, type: "voucher_confirmation", ...r1 });
+        if (adminEmail) {
+          const adminNotif = voucherAdminEmail(booking);
+          const r2 = await sendEmail(adminEmail, adminNotif.subject, adminNotif.html);
+          emailResults.push({ to: adminEmail, type: "voucher_admin", ...r2 });
+        }
+        break;
+      }
+
+      case "rebook_confirmed": {
+        const confirmation = rebookConfirmationEmail(booking);
+        const r1 = await sendEmail(booking.email, confirmation.subject, confirmation.html);
+        emailResults.push({ to: booking.email, type: "rebook_confirmation", ...r1 });
+        calendarEventId = await createCalendarEvent(booking);
+        break;
+      }
+
+      case "voucher_ready": {
+        const ready = voucherReadyEmail(booking);
+        const r1 = await sendEmail(booking.purchaser_email, ready.subject, ready.html);
+        emailResults.push({ to: booking.purchaser_email, type: "voucher_ready", ...r1 });
+        break;
+      }
+
       default:
         return new Response(
           JSON.stringify({ error: `Unknown action: ${action}` }),
@@ -119,7 +156,7 @@ Deno.serve(async (req: Request) => {
     }
 
     return new Response(
-      JSON.stringify({ success: true, calendarEventId, emailResults }),
+      JSON.stringify({ success: true, calendarEventId, calendarDeleted, emailResults }),
       { status: 200, headers: { ...corsHeaders, "Content-Type": "application/json" } }
     );
   } catch (err: unknown) {

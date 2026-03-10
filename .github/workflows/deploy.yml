@@ -44,3 +44,11 @@ jobs:
           exclude: |
             **/.git*
             **/.git*/**
+
+      - name: Deploy Supabase Edge Functions
+        env:
+          SUPABASE_ACCESS_TOKEN: ${{ secrets.SUPABASE_ACCESS_TOKEN }}
+        run: |
+          npx supabase functions deploy booking-notification --project-ref klrndnqbetuxxqgczesa
+          npx supabase functions deploy appointment-reminder --project-ref klrndnqbetuxxqgczesa
+          npx supabase functions deploy email-blast --project-ref klrndnqbetuxxqgczesa

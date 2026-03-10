@@ -92,3 +92,13 @@ export function h2(text: string): string {
 export function p(text: string): string {
   return `<p style="color:#555;font-size:15px;line-height:1.6;margin:0 0 12px;">${text}</p>`;
 }
+
+export function statusBanner(text: string, color: string, bgColor: string): string {
+  return `<table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="margin:0 0 20px;">
+    <tr>
+      <td style="background:${bgColor};border-radius:8px;padding:10px 16px;text-align:center;">
+        <p style="color:${color};font-size:13px;font-weight:700;letter-spacing:1.5px;margin:0;text-transform:uppercase;">${text}</p>
+      </td>
+    </tr>
+  </table>`;
+}
