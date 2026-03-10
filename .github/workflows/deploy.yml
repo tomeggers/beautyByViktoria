@@ -44,6 +44,9 @@ jobs:
           git commit -m "deploy: ${{ github.sha }}"
           git push --force origin deploy
 
+      - name: Trigger Hostinger deployment
+        run: curl -X POST "${{ secrets.HOSTINGER }}"
+
       - name: Deploy Supabase Edge Functions
         env:
           SUPABASE_ACCESS_TOKEN: ${{ secrets.SUPABASE_ACCESS_TOKEN }}
