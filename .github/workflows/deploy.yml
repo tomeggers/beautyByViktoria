@@ -45,7 +45,7 @@ jobs:
           git push --force origin deploy
 
       - name: Trigger Hostinger deployment
-        run: curl -X POST "${{ secrets.HOSTINGER }}"
+        run: curl -X POST "${{ secrets.HOSTINGER_DEPLOY }}"
 
       - name: Deploy Supabase Edge Functions
         env:
