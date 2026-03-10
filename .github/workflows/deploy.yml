@@ -30,16 +30,15 @@ jobs:
       - name: Build
         run: npm run build
 
-      - name: Deploy to Hostinger
-        uses: SamKirkland/FTP-Deploy-Action@v4.3.4
+      - name: Deploy to Hostinger via SFTP
+        uses: pressidium/sftp-deploy-action@v1
         with:
-          server: beautybyviktoria.com
+          host: beautybyviktoria.com
+          port: 65002
           username: u512427609
           password: ${{ secrets.FTP_PASSWORD }}
-          protocol: ftp
-          port: 21
-          local-dir: build/
-          server-dir: public_html/
+          localDir: ./build
+          remoteDir: /domains/beautybyviktoria.com/public_html
 
       - name: Deploy Supabase Edge Functions
         env:
